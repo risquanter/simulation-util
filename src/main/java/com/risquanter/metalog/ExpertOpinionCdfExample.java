@@ -1,7 +1,5 @@
 package com.risquanter.metalog;
 
-import java.util.Arrays;
-
 /**
  * Expert‐Opinion CDF Example for the Metalog API.
  *

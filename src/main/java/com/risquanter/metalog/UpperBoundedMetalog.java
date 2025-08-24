@@ -3,28 +3,28 @@ package com.risquanter.metalog;
 import org.apache.commons.math3.util.FastMath;
 
 /**
- * Lower‐bounded Metalog distribution (support [L,∞)).
+ * Upper‐bounded Metalog distribution (support (−∞, U]).
  *
  * y(p)   = Σ aⱼ Tⱼ(p)
- * Q(p)   = L + exp( y(p) )
- * f(p)   = 1 / [ (Q(p) – L) * y′(p) ]
+ * Q(p)   = U – exp( y(p) )
+ * f(p)   = 1 / [ (U – Q(p)) * y′(p) ]
  *
  * Note on arrow notation:
- *   “L → Q” denotes (Q(p) – L), i.e. distance from lower bound up to the quantile.
+ *   “Q → U” denotes (U – Q(p)), i.e. distance from the quantile up to the upper bound.
  */
-public class LowerBoundedMetalog {
+public class UpperBoundedMetalog {
     private final double[] a;
     private final int     terms;
-    private final double  lowerBound;
+    private final double  upperBound;
 
-    public LowerBoundedMetalog(double[] coefficients, double lowerBound) {
+    public UpperBoundedMetalog(double[] coefficients, double upperBound) {
         if (coefficients == null) {
             throw new IllegalArgumentException("Coefficients must not be null");
         }
         Metalog.validateInputs(0.5, coefficients.length);
         this.a          = coefficients.clone();
         this.terms      = a.length;
-        this.lowerBound = lowerBound;
+        this.upperBound = upperBound;
     }
 
     public double quantile(double p) {
@@ -35,13 +35,13 @@ public class LowerBoundedMetalog {
         for (int j = 0; j < terms; j++) {
             y += a[j] * T[j];
         }
-        return lowerBound + FastMath.exp(y);
+        return upperBound - FastMath.exp(y);
     }
 
     /**
-     * PDF: f(p) = 1 / [ (Q(p) – L) * y′(p) ]
+     * PDF: f(p) = 1 / [ (U – Q(p)) * y′(p) ]
      *
-     * Here “L → Q” means “go from the lower bound up to the quantile,” i.e. (Q(p) – L).
+     * Here “Q → U” means “go from the quantile up to the upper bound,” i.e. (U – Q(p)).
      */
     public double pdf(double p) {
         Metalog.validateInputs(p, terms);
@@ -56,10 +56,10 @@ public class LowerBoundedMetalog {
             dydp += a[j] * dT[j];
         }
 
-        // exp(y) == Q(p) – L
-        double xMinusL = FastMath.exp(y);
+        // exp(y) == U – Q(p)
+        double diff = FastMath.exp(y);
 
-        // f = 1 / [ (L → Q) * y′(p) ]
-        return 1.0 / (xMinusL * dydp);
+        // f = 1 / [ (Q → U) * y′(p) ]
+        return 1.0 / (diff * dydp);
     }
 }
