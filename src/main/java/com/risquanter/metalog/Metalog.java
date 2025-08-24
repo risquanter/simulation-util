@@ -61,4 +61,40 @@ public class Metalog {
         // Additional derivative terms for higher orders can be added similarly.
         return 1.0 / dMdp;
     }
+
+    /**
+     * Derivatives dT_j(p)/dp for j=0..terms-1.
+     * Must mirror basisFunctions() structure.
+     */
+    public static double[] basisDerivatives(double p, int terms) {
+        double[] d = new double[terms];
+        // T0 = 1 → dT0=0
+        if (terms > 1) {
+            // d/dp [ln(p/(1-p))] = 1/[p(1-p)]
+            d[1] = 1.0 / (p * (1.0 - p));
+        }
+        if (terms > 2) {
+            // T2 = p-0.5 → dT2=1
+            d[2] = 1.0;
+        }
+        if (terms > 3) {
+            // T3 = (p-0.5)*ln(p/(1-p))
+            double ln = FastMath.log(p/(1.0-p));
+            // product rule: d[(p-0.5)]*ln + (p-0.5)*d[ln]
+            d[3] = ln + (p - 0.5)*(1.0/(p*(1.0-p)));
+        }
+        if (terms > 4) {
+            // T4 = (p-0.5)^2 → d = 2*(p-0.5)
+            d[4] = 2.0*(p - 0.5);
+        }
+        if (terms > 5) {
+            // T5 = T4 * ln(p/(1-p))
+            double ln = FastMath.log(p/(1.0-p));
+            // d[T4]*ln + T4*d[ln]
+            double t4 = FastMath.pow(p-0.5,2);
+            d[5] = 2.0*(p-0.5)*ln + t4*(1.0/(p*(1.0-p)));
+        }
+        // Additional derivatives (6,7,8…) follow same pattern
+        return d;
+    }
 }
