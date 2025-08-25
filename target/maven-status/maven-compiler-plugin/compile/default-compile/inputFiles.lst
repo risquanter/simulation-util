@@ -1,7 +1,11 @@
 /home/danago/projects/java/java-metalog-distribution/src/main/java/com/risquanter/metalog/App.java
 /home/danago/projects/java/java-metalog-distribution/src/main/java/com/risquanter/metalog/Example.java
-/home/danago/projects/java/java-metalog-distribution/src/main/java/com/risquanter/metalog/ExpertOpinionCdfExample.java
+/home/danago/projects/java/java-metalog-distribution/src/main/java/com/risquanter/metalog/ExpertOpinionFullyBoundedCdfExample.java
+/home/danago/projects/java/java-metalog-distribution/src/main/java/com/risquanter/metalog/FullyBoundedMetalog.java
+/home/danago/projects/java/java-metalog-distribution/src/main/java/com/risquanter/metalog/FullyBoundedMetalogFitter.java
 /home/danago/projects/java/java-metalog-distribution/src/main/java/com/risquanter/metalog/LowerBoundedMetalog.java
 /home/danago/projects/java/java-metalog-distribution/src/main/java/com/risquanter/metalog/LowerBoundedMetalogFitter.java
 /home/danago/projects/java/java-metalog-distribution/src/main/java/com/risquanter/metalog/Metalog.java
 /home/danago/projects/java/java-metalog-distribution/src/main/java/com/risquanter/metalog/MetalogFitter.java
+/home/danago/projects/java/java-metalog-distribution/src/main/java/com/risquanter/metalog/UpperBoundedMetalog.java
+/home/danago/projects/java/java-metalog-distribution/src/main/java/com/risquanter/metalog/UpperBoundedMetalogFitter.java

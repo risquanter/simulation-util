@@ -1,7 +1,6 @@
 package com.risquanter.metalog;
 
 import org.apache.commons.math3.util.FastMath;
-
 /**
  * Metalog distribution: basis functions, quantile & PDF evaluation.
  */
