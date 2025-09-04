@@ -1,0 +1,154 @@
+{
+  "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+  "description": "CDF of expert-opinion metalog (3-term fit), with the expert’s original (p, Q) triplet highlighted",
+  "data": {
+    "values": [
+      {"quantile": 13.6251, "p": 0.01},
+      {"quantile": 14.4175, "p": 0.02},
+      {"quantile": 14.9662, "p": 0.03},
+      {"quantile": 15.4018, "p": 0.04},
+      {"quantile": 15.7704, "p": 0.05},
+      {"quantile": 16.0942, "p": 0.06},
+      {"quantile": 16.3857, "p": 0.07},
+      {"quantile": 16.6529, "p": 0.08},
+      {"quantile": 16.9009, "p": 0.09},
+      {"quantile": 17.1335, "p": 0.10},
+      {"quantile": 17.3534, "p": 0.11},
+      {"quantile": 17.5628, "p": 0.12},
+      {"quantile": 17.7632, "p": 0.13},
+      {"quantile": 17.9560, "p": 0.14},
+      {"quantile": 18.1422, "p": 0.15},
+      {"quantile": 18.3227, "p": 0.16},
+      {"quantile": 18.4982, "p": 0.17},
+      {"quantile": 18.6693, "p": 0.18},
+      {"quantile": 18.8366, "p": 0.19},
+      {"quantile": 19.0004, "p": 0.20},
+      {"quantile": 19.1613, "p": 0.21},
+      {"quantile": 19.3196, "p": 0.22},
+      {"quantile": 19.4755, "p": 0.23},
+      {"quantile": 19.6294, "p": 0.24},
+      {"quantile": 19.7814, "p": 0.25},
+      {"quantile": 19.9320, "p": 0.26},
+      {"quantile": 20.0811, "p": 0.27},
+      {"quantile": 20.2291, "p": 0.28},
+      {"quantile": 20.3762, "p": 0.29},
+      {"quantile": 20.5224, "p": 0.30},
+      {"quantile": 20.6679, "p": 0.31},
+      {"quantile": 20.8130, "p": 0.32},
+      {"quantile": 20.9577, "p": 0.33},
+      {"quantile": 21.1021, "p": 0.34},
+      {"quantile": 21.2465, "p": 0.35},
+      {"quantile": 21.3909, "p": 0.36},
+      {"quantile": 21.5354, "p": 0.37},
+      {"quantile": 21.6802, "p": 0.38},
+      {"quantile": 21.8254, "p": 0.39},
+      {"quantile": 21.9710, "p": 0.40},
+      {"quantile": 22.1173, "p": 0.41},
+      {"quantile": 22.2644, "p": 0.42},
+      {"quantile": 22.4122, "p": 0.43},
+      {"quantile": 22.5610, "p": 0.44},
+      {"quantile": 22.7110, "p": 0.45},
+      {"quantile": 22.8621, "p": 0.46},
+      {"quantile": 23.0145, "p": 0.47},
+      {"quantile": 23.1684, "p": 0.48},
+      {"quantile": 23.3238, "p": 0.49},
+      {"quantile": 23.4810, "p": 0.50},
+      {"quantile": 23.6400, "p": 0.51},
+      {"quantile": 23.8010, "p": 0.52},
+      {"quantile": 23.9642, "p": 0.53},
+      {"quantile": 24.1297, "p": 0.54},
+      {"quantile": 24.2977, "p": 0.55},
+      {"quantile": 24.4683, "p": 0.56},
+      {"quantile": 24.6418, "p": 0.57},
+      {"quantile": 24.8183, "p": 0.58},
+      {"quantile": 24.9981, "p": 0.59},
+      {"quantile": 25.1814, "p": 0.60},
+      {"quantile": 25.3684, "p": 0.61},
+      {"quantile": 25.5594, "p": 0.62},
+      {"quantile": 25.7547, "p": 0.63},
+      {"quantile": 25.9546, "p": 0.64},
+      {"quantile": 26.1595, "p": 0.65},
+      {"quantile": 26.3696, "p": 0.66},
+      {"quantile": 26.5854, "p": 0.67},
+      {"quantile": 26.8073, "p": 0.68},
+      {"quantile": 27.0358, "p": 0.69},
+      {"quantile": 27.2715, "p": 0.70},
+      {"quantile": 27.5149, "p": 0.71},
+      {"quantile": 27.7666, "p": 0.72},
+      {"quantile": 28.0275, "p": 0.73},
+      {"quantile": 28.2982, "p": 0.74},
+      {"quantile": 28.5798, "p": 0.75},
+      {"quantile": 28.8732, "p": 0.76},
+      {"quantile": 29.1797, "p": 0.77},
+      {"quantile": 29.5006, "p": 0.78},
+      {"quantile": 29.8374, "p": 0.79},
+      {"quantile": 30.1920, "p": 0.80},
+      {"quantile": 30.5665, "p": 0.81},
+      {"quantile": 30.9633, "p": 0.82},
+      {"quantile": 31.3854, "p": 0.83},
+      {"quantile": 31.8363, "p": 0.84},
+      {"quantile": 32.3204, "p": 0.85},
+      {"quantile": 32.8428, "p": 0.86},
+      {"quantile": 33.4100, "p": 0.87},
+      {"quantile": 34.0305, "p": 0.88},
+      {"quantile": 34.7147, "p": 0.89},
+      {"quantile": 35.4767, "p": 0.90},
+      {"quantile": 36.3354, "p": 0.91},
+      {"quantile": 37.3171, "p": 0.92},
+      {"quantile": 38.4599, "p": 0.93},
+      {"quantile": 39.8214, "p": 0.94},
+      {"quantile": 41.4948, "p": 0.95},
+      {"quantile": 43.6440, "p": 0.96},
+      {"quantile": 46.5950, "p": 0.97},
+      {"quantile": 51.1401, "p": 0.98},
+      {"quantile": 60.1334, "p": 0.99}
+    ]
+  },
+  "layer": [
+    {
+      "mark": {
+        "type": "line",
+        "color": "firebrick",
+        "strokeWidth": 2
+      },
+      "encoding": {
+        "x": {
+          "field": "quantile",
+          "type": "quantitative",
+          "title": "Completion Time (days)"
+        },
+        "y": {
+          "field": "p",
+          "type": "quantitative",
+          "title": "CDF"
+        }
+      }
+    },
+    {
+      "data": {
+        "values": [
+          {"quantile": 17.0, "p": 0.10},
+          {"quantile": 24.0, "p": 0.50},
+          {"quantile": 35.0, "p": 0.90}
+        ]
+      },
+      "mark": {
+        "type": "point",
+        "shape": "circle",
+        "color": "black",
+        "filled": true,
+        "size": 100
+      },
+      "encoding": {
+        "x": {
+          "field": "quantile",
+          "type": "quantitative"
+        },
+        "y": {
+          "field": "p",
+          "type": "quantitative"
+        }
+      }
+    }
+  ]
+}

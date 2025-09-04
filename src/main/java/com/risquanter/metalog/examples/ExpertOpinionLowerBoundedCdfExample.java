@@ -1,4 +1,7 @@
-package com.risquanter.metalog;
+package com.risquanter.metalog.examples;
+
+import com.risquanter.metalog.LowerBoundedMetalog;
+import com.risquanter.metalog.LowerBoundedMetalogFitter;
 
 /**
  * Expert‐Opinion CDF Example using a lower‐bounded Metalog (support [L,∞)).
@@ -19,7 +22,7 @@ public class ExpertOpinionLowerBoundedCdfExample {
         // 1) Expert’s quantiles
         double[] pVals     = { 0.10, 0.50, 0.90 };
         double[] xVals     = { 17.0, 24.0, 35.0 };
-        double   lowerBound = 10.0;
+        double   lowerBound = 0.0;
         int      terms      = pVals.length;  // = 3
 
         // 2) Fit the lower-bounded metalog (support [L, ∞))

@@ -1,5 +1,7 @@
-package com.risquanter.metalog;
+package com.risquanter.metalog.examples;
 
+import com.risquanter.metalog.FullyBoundedMetalog;
+import com.risquanter.metalog.FullyBoundedMetalogFitter;
 
 /**
  * Expert‐Opinion CDF Example using a fully‐bounded Metalog (support [L,U]).

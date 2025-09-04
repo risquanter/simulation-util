@@ -1,6 +1,9 @@
-package com.risquanter.metalog;
+package com.risquanter.metalog.examples;
 
 import java.util.Random;
+
+import com.risquanter.metalog.Metalog;
+import com.risquanter.metalog.MetalogFitter;
 
 /**
  * Demonstrates fitting a metalog to simulated aggregate losses
