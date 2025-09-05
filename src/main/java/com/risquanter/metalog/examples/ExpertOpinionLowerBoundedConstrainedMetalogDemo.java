@@ -3,8 +3,7 @@ package com.risquanter.metalog.examples;
 import java.util.stream.IntStream;
 
 import com.risquanter.metalog.Metalog;
-
-import com.risquanter.metalog.fitter.LowerBoundedConstrainedMetalogFitter;
+import com.risquanter.metalog.estimate.QPLowerBoundedConstrainedFitter;
 
 public class ExpertOpinionLowerBoundedConstrainedMetalogDemo {
     public static void main(String[] args) {
@@ -22,8 +21,8 @@ public class ExpertOpinionLowerBoundedConstrainedMetalogDemo {
         double lowerBound = 10.0;
 
         // 3) Fit via constrained QP
-        LowerBoundedConstrainedMetalogFitter fitter =
-            new LowerBoundedConstrainedMetalogFitter(pVals, xVals, terms, epsilon, gridP,lowerBound) ;
+        QPLowerBoundedConstrainedFitter fitter =
+            new QPLowerBoundedConstrainedFitter(pVals, xVals, terms, epsilon, gridP,lowerBound) ;
         double[] coeffs = fitter.fit();
 
         // 4) Wrap into a Metalog and emit CDF JSON

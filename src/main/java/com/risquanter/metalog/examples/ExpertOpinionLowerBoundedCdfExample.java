@@ -1,7 +1,7 @@
 package com.risquanter.metalog.examples;
 
 import com.risquanter.metalog.LowerBoundedMetalog;
-import com.risquanter.metalog.fitter.LowerBoundedMetalogFitter;
+import com.risquanter.metalog.estimate.SVDLowerBoundedFitter;
 
 /**
  * Expert‐Opinion CDF Example using a lower‐bounded Metalog (support [L,∞)).
@@ -26,8 +26,8 @@ public class ExpertOpinionLowerBoundedCdfExample {
         int      terms      = pVals.length;  // = 3
 
         // 2) Fit the lower-bounded metalog (support [L, ∞))
-        LowerBoundedMetalogFitter fitter =
-            new LowerBoundedMetalogFitter(pVals, xVals, terms, lowerBound);
+        SVDLowerBoundedFitter fitter =
+            new SVDLowerBoundedFitter(pVals, xVals, terms, lowerBound);
         double[] coeffs = fitter.fit();
 
         // 3) Wrap the fitted coefficients in the distribution

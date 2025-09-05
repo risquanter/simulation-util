@@ -1,7 +1,7 @@
 package com.risquanter.metalog.examples;
 
 import com.risquanter.metalog.FullyBoundedMetalog;
-import com.risquanter.metalog.fitter.FullyBoundedMetalogFitter;
+import com.risquanter.metalog.estimate.SVDFullyBoundedFitter;
 
 /**
  * Expert‐Opinion CDF Example using a fully‐bounded Metalog (support [L,U]).
@@ -30,8 +30,8 @@ public class ExpertOpinionFullyBoundedCdfExample {
         int      terms      = pVals.length;
 
         // 2) Fit fully-bounded metalog
-        FullyBoundedMetalogFitter fitter =
-            new FullyBoundedMetalogFitter(pVals, xVals, terms, lowerBound, upperBound);
+        SVDFullyBoundedFitter fitter =
+            new SVDFullyBoundedFitter(pVals, xVals, terms, lowerBound, upperBound);
         double[] coeffs   = fitter.fit();
 
         // 3) Wrap and sample

@@ -1,4 +1,4 @@
-package com.risquanter.metalog.fitter;
+package com.risquanter.metalog.estimate;
 
 import org.ojalgo.optimisation.ExpressionsBasedModel;
 import org.ojalgo.optimisation.Expression;
@@ -15,7 +15,7 @@ import com.risquanter.metalog.Metalog;
  *
  * where M(p)=Σ_j a_j T_j(p), Y[i,j]=T_j(pData[i]), D[k,j]=dT_j/dp(gridP[k]).
  */
-public class ConstrainedMetalogFitter {
+public class QPConstrainedFitter {
 
     private final double[] pData; // length K
     private final double[] xData; // length K
@@ -23,7 +23,7 @@ public class ConstrainedMetalogFitter {
     private final double epsilon; // small positivity floor
     private final double[] gridP; // length G
 
-    public ConstrainedMetalogFitter(
+    public QPConstrainedFitter(
             double[] pData,
             double[] xData,
             int terms,

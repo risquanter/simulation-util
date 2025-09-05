@@ -1,4 +1,4 @@
-package com.risquanter.metalog.fitter;
+package com.risquanter.metalog.estimate;
 
 import org.apache.commons.math3.util.FastMath;
 
@@ -13,7 +13,7 @@ import com.risquanter.metalog.Metalog;
  *   y(pᵢ) = Σ aⱼ · Tⱼ(pᵢ)
  * by ordinary least squares.
  */
-public class FullyBoundedMetalogFitter {
+public class SVDFullyBoundedFitter {
     private final double[] pValues;
     private final double[] xValues;
     private final int     terms;
@@ -27,7 +27,7 @@ public class FullyBoundedMetalogFitter {
      * @param lowerBound  support lower bound L
      * @param upperBound  support upper bound U
      */
-    public FullyBoundedMetalogFitter(
+    public SVDFullyBoundedFitter(
             double[] pValues,
             double[] xValues,
             int     terms,
@@ -86,7 +86,7 @@ public class FullyBoundedMetalogFitter {
         }
 
         // Delegate to the unbounded MetalogFitter on (pValues, yValues)
-        SVDMetalogFitter baseFitter = new SVDMetalogFitter(pValues, yValues, terms);
+        SVDFitter baseFitter = new SVDFitter(pValues, yValues, terms);
         return baseFitter.fit();
     }
 }

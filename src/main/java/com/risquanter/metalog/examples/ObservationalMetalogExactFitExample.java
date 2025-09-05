@@ -1,7 +1,7 @@
 package com.risquanter.metalog.examples;
 import java.util.Arrays;
 import com.risquanter.metalog.Metalog;
-import com.risquanter.metalog.fitter.SVDMetalogFitter;
+import com.risquanter.metalog.estimate.SVDFitter;
 
 public class ObservationalMetalogExactFitExample {
     public static void main(String[] args) {
@@ -20,7 +20,7 @@ public class ObservationalMetalogExactFitExample {
         double[] xValues = observations.clone();
 
         // 3) Fit an n‐term metalog (exact through each point)
-        SVDMetalogFitter fitter = new SVDMetalogFitter(pValues, xValues, n);
+        SVDFitter fitter = new SVDFitter(pValues, xValues, n);
         double[] coeffs = fitter.fit();
 
         // 4) Instantiate the fitted metalog

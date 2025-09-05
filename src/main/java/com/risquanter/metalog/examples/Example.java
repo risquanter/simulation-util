@@ -3,7 +3,7 @@ package com.risquanter.metalog.examples;
 import java.util.Random;
 
 import com.risquanter.metalog.Metalog;
-import com.risquanter.metalog.fitter.SVDMetalogFitter;
+import com.risquanter.metalog.estimate.SVDFitter;
 
 /**
  * Demonstrates fitting a metalog to simulated aggregate losses
@@ -36,7 +36,7 @@ public class Example {
         }
 
         // 3) Fit metalog
-        SVDMetalogFitter fitter = new SVDMetalogFitter(p, x, K);
+        SVDFitter fitter = new SVDFitter(p, x, K);
         double[] coeffs = fitter.fit();
         Metalog metalog = new Metalog(coeffs);
 

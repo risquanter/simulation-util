@@ -1,33 +1,33 @@
-package com.risquanter.metalog.fitter;
+package com.risquanter.metalog.estimate;
 
 import org.apache.commons.math3.util.FastMath;
 
 import com.risquanter.metalog.Metalog;
 
 /**
- * Fits a lower‐bounded metalog: Q(p) ≥ lowerBound.
+ * Fits an upper-bounded metalog: Q(p) ≤ upperBound.
  *
- * We transform xᵢ → yᵢ = ln(xᵢ – L), then fit
+ * We transform observed xᵢ → yᵢ = ln( upperBound – xᵢ ), then fit
  *   y(pᵢ) = Σ aⱼ · Tⱼ(pᵢ)
- * by ordinary least squares.
+ * via ordinary least squares.
  */
-public class LowerBoundedMetalogFitter {
+public class SVDUpperBoundedFitter {
     private final double[] pValues;
     private final double[] xValues;
-    private final int terms;
-    private final double lowerBound;
+    private final int     terms;
+    private final double  upperBound;
 
     /**
-     * @param pValues     probabilities pᵢ ∈ (0,1)
-     * @param xValues     observed quantiles Q(pᵢ) ≥ lowerBound
-     * @param terms       # basis terms (2…MAX_TERMS)
-     * @param lowerBound  known minimum support L
+     * @param pValues    probabilities pᵢ ∈ (0,1)
+     * @param xValues    observed quantiles Q(pᵢ) ≤ upperBound
+     * @param terms      number of basis terms (2…MAX_TERMS)
+     * @param upperBound known maximum support U
      */
-    public LowerBoundedMetalogFitter(
+    public SVDUpperBoundedFitter(
         double[] pValues,
         double[] xValues,
         int     terms,
-        double  lowerBound
+        double  upperBound
     ) {
         if (pValues == null || xValues == null) {
             throw new IllegalArgumentException("pValues and xValues must not be null");
@@ -35,20 +35,20 @@ public class LowerBoundedMetalogFitter {
         if (pValues.length != xValues.length) {
             throw new IllegalArgumentException("Lengths of pValues and xValues must match");
         }
-        // Validate term count (uses same checks as Metalog)
+        // Validate term range (uses same logic as Metalog)
         Metalog.validateInputs(0.5, terms);
 
         this.pValues    = pValues.clone();
         this.xValues    = xValues.clone();
         this.terms      = terms;
-        this.lowerBound = lowerBound;
+        this.upperBound = upperBound;
     }
 
     /**
-     * Perform the OLS fit on
-     *   yᵢ = ln(xᵢ – L) = Σ aⱼ Tⱼ(pᵢ).
+     * Perform OLS on
+     *   yᵢ = ln( U – xᵢ ) = Σ aⱼ Tⱼ(pᵢ).
      *
-     * @return the fitted coefficient array a₀…a_{terms-1}
+     * @return fitted coefficient array a₀…a_{terms-1}
      */
     public double[] fit() {
         int K = pValues.length;
@@ -58,19 +58,19 @@ public class LowerBoundedMetalogFitter {
             double p = pValues[i];
             Metalog.validateInputs(p, terms);
 
-            double shifted = xValues[i] - lowerBound;
+            double shifted = upperBound - xValues[i];
             if (shifted <= 0.0) {
                 throw new IllegalArgumentException(
-                    "All xValues[i] must exceed lowerBound; "
-                  + "xValues[" + i + "]=" + xValues[i]
-                  + " ≤ lowerBound=" + lowerBound
+                    "All xValues[i] must be ≤ upperBound; "
+                  + "but xValues[" + i + "]=" + xValues[i]
+                  + " ≥ upperBound=" + upperBound
                 );
             }
             yValues[i] = FastMath.log(shifted);
         }
 
-        // Delegate to the unbounded fitter on (pValues, yValues)
-        SVDMetalogFitter baseFitter = new SVDMetalogFitter(pValues, yValues, terms);
+        // Delegate to unbounded fitter on (pValues, yValues)
+        SVDFitter baseFitter = new SVDFitter(pValues, yValues, terms);
         return baseFitter.fit();
     }
 }
