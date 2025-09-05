@@ -1,6 +1,8 @@
-package com.risquanter.metalog;
+package com.risquanter.metalog.fitter;
 
 import org.apache.commons.math3.util.FastMath;
+
+import com.risquanter.metalog.Metalog;
 
 /**
  * Fits a lower‐bounded metalog: Q(p) ≥ lowerBound.
@@ -68,7 +70,7 @@ public class LowerBoundedMetalogFitter {
         }
 
         // Delegate to the unbounded fitter on (pValues, yValues)
-        MetalogFitter baseFitter = new MetalogFitter(pValues, yValues, terms);
+        SVDMetalogFitter baseFitter = new SVDMetalogFitter(pValues, yValues, terms);
         return baseFitter.fit();
     }
 }

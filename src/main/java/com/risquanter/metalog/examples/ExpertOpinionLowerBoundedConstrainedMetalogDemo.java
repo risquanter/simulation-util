@@ -1,35 +1,29 @@
 package com.risquanter.metalog.examples;
 
-import java.util.Arrays;
 import java.util.stream.IntStream;
 
 import com.risquanter.metalog.Metalog;
-import com.risquanter.metalog.fitter.ConstrainedMetalogFitter;
 
-public class RainfallConstrainedMetalogDemo {
+import com.risquanter.metalog.fitter.LowerBoundedConstrainedMetalogFitter;
+
+public class ExpertOpinionLowerBoundedConstrainedMetalogDemo {
     public static void main(String[] args) {
-        // 1) Raw daily rainfall (mm)
-        double[] obs = {78,65,82,90,120,150,160,140,130,110,95,85};
-        Arrays.sort(obs);
 
-        int n = obs.length;
-        double[] pVals = new double[n];
-        double[] xVals = new double[n];
-        for (int i = 0; i < n; i++) {
-            pVals[i] = (i + 0.5) / n;  // Hazen plotting positions
-            xVals[i] = obs[i];
-        }
+        // 1) Expert’s quantiles
+        double[] pVals     = { 0.10, 0.50, 0.90 };
+        double[] xVals     = { 17.0, 24.0, 35.0 };
+        int      terms      = pVals.length + 1;  // = 3
 
-        // 2) Fitter parameters
-        int    terms   = Math.min(n, 9);
         double epsilon = 1e-6;
         double[] gridP = IntStream.rangeClosed(1, 99)
                                   .mapToDouble(i -> i/100.0)
                                   .toArray();
 
+        double lowerBound = 10.0;
+
         // 3) Fit via constrained QP
-        ConstrainedMetalogFitter fitter =
-            new ConstrainedMetalogFitter(pVals, xVals, terms, epsilon, gridP);
+        LowerBoundedConstrainedMetalogFitter fitter =
+            new LowerBoundedConstrainedMetalogFitter(pVals, xVals, terms, epsilon, gridP,lowerBound) ;
         double[] coeffs = fitter.fit();
 
         // 4) Wrap into a Metalog and emit CDF JSON

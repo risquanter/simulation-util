@@ -1,4 +1,4 @@
-package com.risquanter.metalog;
+package com.risquanter.metalog.fitter;
 
 import org.apache.commons.math3.linear.Array2DRowRealMatrix;
 import org.apache.commons.math3.linear.RealMatrix;
@@ -6,10 +6,12 @@ import org.apache.commons.math3.linear.RealVector;
 import org.apache.commons.math3.linear.ArrayRealVector;
 import org.apache.commons.math3.linear.SingularValueDecomposition;
 
+import com.risquanter.metalog.Metalog;
+
 /**
  * Fits a metalog distribution to (p_i, x_i) quantile points.
  */   
-public class MetalogFitter {
+public class SVDMetalogFitter {
     private final double[] pValues;
     private final double[] xValues;
     private final int terms;
@@ -19,7 +21,7 @@ public class MetalogFitter {
      * @param xValues quantile values at pValues (length K)
      * @param terms   number of metalog terms (n)
      */
-    public MetalogFitter(double[] pValues, double[] xValues, int terms) {
+    public SVDMetalogFitter(double[] pValues, double[] xValues, int terms) {
         if (pValues.length != xValues.length) {
             throw new IllegalArgumentException("Lengths of p and x must match");
         }

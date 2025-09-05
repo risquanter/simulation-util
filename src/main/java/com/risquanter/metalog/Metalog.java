@@ -95,6 +95,7 @@ public class Metalog {
      * @throws  IllegalArgumentException if p≤0 or ≥1
      */
     public double pdf(double p) {
+        //TODO refactor: call validateInputs(p, terms) instead
         if (p <= 0.0 || p >= 1.0) {
             throw new IllegalArgumentException("p must be in (0,1), got " + p);
         }
@@ -160,7 +161,8 @@ public class Metalog {
     }
 
     /** Validate p∈(0,1) and 2≤terms≤MAX_TERMS. */
-    protected static void validateInputs(double p, int terms) {
+    //TODO: move it to a new MetalogFitter base class? Split into two (term and probability validation? 
+    public static void validateInputs(double p, int terms) {
         if (terms < 2 || terms > MAX_TERMS) {
             throw new IllegalArgumentException(
                 "terms must be in [2," + MAX_TERMS + "], got " + terms);

@@ -3,7 +3,7 @@ package com.risquanter.metalog.examples;
 import java.util.Arrays;
 
 import com.risquanter.metalog.Metalog;
-import com.risquanter.metalog.MetalogFitter;
+import com.risquanter.metalog.fitter.SVDMetalogFitter;
 
 public class ObservationalMetalogFitExample {
     public static void main(String[] args) {
@@ -26,7 +26,7 @@ public class ObservationalMetalogFitExample {
         int terms    = Math.min(n, maxTerms);
 
         // 4) Fit a "9-term" metalog to our 12 (p_i, x_i) points
-        MetalogFitter fitter = new MetalogFitter(pValues, xValues, terms);
+        SVDMetalogFitter fitter = new SVDMetalogFitter(pValues, xValues, terms);
         double[] coeffs = fitter.fit();
 
         // 5) Wrap into a Metalog distribution

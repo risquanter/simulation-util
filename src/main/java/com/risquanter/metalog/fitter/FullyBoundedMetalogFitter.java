@@ -1,6 +1,8 @@
-package com.risquanter.metalog;
+package com.risquanter.metalog.fitter;
 
 import org.apache.commons.math3.util.FastMath;
+
+import com.risquanter.metalog.Metalog;
 
 /**
  * Fits a fully‐bounded metalog: support [L, U].
@@ -84,7 +86,7 @@ public class FullyBoundedMetalogFitter {
         }
 
         // Delegate to the unbounded MetalogFitter on (pValues, yValues)
-        MetalogFitter baseFitter = new MetalogFitter(pValues, yValues, terms);
+        SVDMetalogFitter baseFitter = new SVDMetalogFitter(pValues, yValues, terms);
         return baseFitter.fit();
     }
 }

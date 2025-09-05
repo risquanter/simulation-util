@@ -1,7 +1,7 @@
 package com.risquanter.metalog.examples;
 
 import com.risquanter.metalog.LowerBoundedMetalog;
-import com.risquanter.metalog.LowerBoundedMetalogFitter;
+import com.risquanter.metalog.fitter.LowerBoundedMetalogFitter;
 
 /**
  * Expert‐Opinion CDF Example using a lower‐bounded Metalog (support [L,∞)).

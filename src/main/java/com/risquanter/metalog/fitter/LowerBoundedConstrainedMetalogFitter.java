@@ -1,9 +1,10 @@
-package com.risquanter.metalog;
+package com.risquanter.metalog.fitter;
 
-import java.util.stream.IntStream;
 import org.ojalgo.optimisation.ExpressionsBasedModel;
 import org.ojalgo.optimisation.Expression;
 import org.ojalgo.optimisation.Variable;
+
+import com.risquanter.metalog.Metalog;
 
 /**
  * Fits a Metalog quantile function to (pData[i], xData[i]) by
@@ -14,20 +15,22 @@ import org.ojalgo.optimisation.Variable;
  *
  * where M(p)=Σ_j a_j T_j(p), Y[i,j]=T_j(pData[i]), D[k,j]=dT_j/dp(gridP[k]).
  */
-public class ConstrainedMetalogFitter {
+public class LowerBoundedConstrainedMetalogFitter {
 
     private final double[] pData; // length K
     private final double[] xData; // length K
     private final int terms; // n = # of metalog terms
     private final double epsilon; // small positivity floor
     private final double[] gridP; // length G
+    private final double lowerBound;
 
-    public ConstrainedMetalogFitter(
+    public LowerBoundedConstrainedMetalogFitter(
             double[] pData,
             double[] xData,
             int terms,
             double epsilon,
-            double[] gridP) {
+            double[] gridP,
+            double lowerBound) {
 
         if (pData.length != xData.length) {
             throw new IllegalArgumentException("pData and xData must have same length");
@@ -39,6 +42,7 @@ public class ConstrainedMetalogFitter {
         this.terms = terms;
         this.epsilon = epsilon;
         this.gridP = gridP.clone();
+        this.lowerBound = lowerBound;
     }
 
     public double[] fit() {
@@ -78,6 +82,13 @@ public class ConstrainedMetalogFitter {
                 D[k][j] = dT[j];
             }
         }
+        // TODO LowerBounded specific
+        // G = gridP.length, n = terms
+        double[][] B = new double[G][n];
+        for (int k = 0; k < G; k++) {
+            double[] T = Metalog.basisFunctions(gridP[k], n);
+            System.arraycopy(T, 0, B[k], 0, n);
+        }
 
         // --- 5) Set up ojAlgo model ---
         ExpressionsBasedModel model = new ExpressionsBasedModel();
@@ -109,6 +120,15 @@ public class ConstrainedMetalogFitter {
                     .lower(epsilon);
             for (int j = 0; j < n; j++) {
                 cons.set(vars[j], D[k][j]);
+            }
+        }
+
+        // 5d) Add lower-bound constraints: M(p_k) ≥ L
+        for (int k = 0; k < G; k++) {
+            var lbExpr = model.addExpression("lb_" + k)
+                    .lower(lowerBound);
+            for (int j = 0; j < n; j++) {
+                lbExpr.set(vars[j], B[k][j]);
             }
         }
 
