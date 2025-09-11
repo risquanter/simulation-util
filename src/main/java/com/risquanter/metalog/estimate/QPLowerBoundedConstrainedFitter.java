@@ -48,9 +48,9 @@ public class QPLowerBoundedConstrainedFitter {
     public double[] fit() {
 
         // --- 1) Dimensions ---
-        int K = pData.length; // # of data points
-        int n = terms; // # of coefficients
-        int G = gridP.length; // # of grid points for monotonicity
+        final int K = pData.length; // # of data points
+        final int n = terms; // # of coefficients
+        final int G = gridP.length; // # of grid points for monotonicity
 
         // --- 2) Build basis‐matrix Y (K×n) ---
         double[][] Y = new double[K][n];
@@ -81,13 +81,6 @@ public class QPLowerBoundedConstrainedFitter {
             for (int j = 0; j < n; j++) {
                 D[k][j] = dT[j];
             }
-        }
-        // TODO LowerBounded specific
-        // G = gridP.length, n = terms
-        double[][] B = new double[G][n];
-        for (int k = 0; k < G; k++) {
-            double[] T = Metalog.basisFunctions(gridP[k], n);
-            System.arraycopy(T, 0, B[k], 0, n);
         }
 
         // --- 5) Set up ojAlgo model ---
@@ -124,6 +117,15 @@ public class QPLowerBoundedConstrainedFitter {
         }
 
         // 5d) Add lower-bound constraints: M(p_k) ≥ L
+
+        // TODO LowerBounded specific
+        // G = gridP.length, n = terms
+        double[][] B = new double[G][n];
+        for (int k = 0; k < G; k++) {
+            double[] T = Metalog.basisFunctions(gridP[k], n);
+            System.arraycopy(T, 0, B[k], 0, n);
+        }
+
         for (int k = 0; k < G; k++) {
             var lbExpr = model.addExpression("lb_" + k)
                     .lower(lowerBound);
