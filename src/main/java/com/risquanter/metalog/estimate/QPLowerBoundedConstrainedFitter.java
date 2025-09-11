@@ -22,7 +22,7 @@ public class QPLowerBoundedConstrainedFitter {
     private final int terms; // n = # of metalog terms
     private final double epsilon; // small positivity floor
     private final double[] gridP; // length G
-    private final double lowerBound;
+    private final Double lowerBound;
 
     public QPLowerBoundedConstrainedFitter(
             double[] pData,
@@ -30,7 +30,7 @@ public class QPLowerBoundedConstrainedFitter {
             int terms,
             double epsilon,
             double[] gridP,
-            double lowerBound) {
+            Double lowerBound) {
 
         if (pData.length != xData.length) {
             throw new IllegalArgumentException("pData and xData must have same length");
@@ -120,17 +120,19 @@ public class QPLowerBoundedConstrainedFitter {
 
         // TODO LowerBounded specific
         // G = gridP.length, n = terms
-        double[][] B = new double[G][n];
-        for (int k = 0; k < G; k++) {
-            double[] T = Metalog.basisFunctions(gridP[k], n);
-            System.arraycopy(T, 0, B[k], 0, n);
-        }
+        if (lowerBound != null) {
+            double[][] B = new double[G][n];
+            for (int k = 0; k < G; k++) {
+                double[] T = Metalog.basisFunctions(gridP[k], n);
+                System.arraycopy(T, 0, B[k], 0, n);
+            }
 
-        for (int k = 0; k < G; k++) {
-            var lbExpr = model.addExpression("lb_" + k)
-                    .lower(lowerBound);
-            for (int j = 0; j < n; j++) {
-                lbExpr.set(vars[j], B[k][j]);
+            for (int k = 0; k < G; k++) {
+                var lbExpr = model.addExpression("lb_" + k)
+                        .lower(lowerBound);
+                for (int j = 0; j < n; j++) {
+                    lbExpr.set(vars[j], B[k][j]);
+                }
             }
         }
 

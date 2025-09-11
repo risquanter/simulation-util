@@ -11,14 +11,14 @@ public class ExpertOpinionLowerBoundedConstrainedMetalogDemo {
         // 1) Expert’s quantiles
         double[] pVals     = { 0.10, 0.50, 0.90 };
         double[] xVals     = { 17.0, 24.0, 35.0 };
-        int      terms      = pVals.length + 1;  // = 3
+        int      terms      = pVals.length + 1;  // = 4 for smottehr fitting
 
         double epsilon = 1e-6;
         double[] gridP = IntStream.rangeClosed(1, 99)
                                   .mapToDouble(i -> i/100.0)
                                   .toArray();
 
-        double lowerBound = 10.0;
+        Double lowerBound = 15.0;
 
         // 3) Fit via constrained QP
         QPLowerBoundedConstrainedFitter fitter =

@@ -11,7 +11,7 @@ public class ExpertOpinionConstrainedMetalogDemo {
         // 1) Expert’s quantiles
         double[] pVals     = { 0.10, 0.50, 0.90 };
         double[] xVals     = { 17.0, 24.0, 35.0 };
-        int      terms      = pVals.length;  // = 3
+        int      terms      = pVals.length +1 ;  // = 4 for smoother fitting
 
         double epsilon = 1e-6;
         double[] gridP = IntStream.rangeClosed(1, 99)
