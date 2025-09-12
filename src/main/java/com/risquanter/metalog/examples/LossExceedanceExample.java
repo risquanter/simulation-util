@@ -7,7 +7,7 @@ import java.util.stream.IntStream;
 import org.apache.commons.math3.distribution.LogNormalDistribution;
 
 import com.risquanter.metalog.Metalog;
-import com.risquanter.metalog.estimate.QPLowerBoundedConstrainedFitter;
+import com.risquanter.metalog.estimate.QPBoundedConstrainedFitter;
 
 /**
  * Demonstrates fitting a metalog to simulated aggregate losses,
@@ -52,8 +52,8 @@ public class LossExceedanceExample {
                                       .mapToDouble(i -> i / 100.0)
                                       .toArray();
         double   lowerBound = 0.0;
-        QPLowerBoundedConstrainedFitter fitter =
-            new QPLowerBoundedConstrainedFitter(p, x, K, epsilon, gridP, lowerBound);
+        QPBoundedConstrainedFitter fitter =
+            new QPBoundedConstrainedFitter(p, x, K, epsilon, gridP, lowerBound, null);
         double[] coeffs = fitter.fit();
         Metalog metalog  = new Metalog(coeffs);
 
