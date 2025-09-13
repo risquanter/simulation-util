@@ -1,9 +1,8 @@
-package com.risquanter.metalog.api;
+package com.risquanter.metalog.estimate;
 
 import java.util.stream.IntStream;
 
 import com.risquanter.metalog.Metalog;
-import com.risquanter.metalog.estimate.QPBoundedConstrainedFitter;
 
 /**
  * Fluent builder for all QP‐based Metalog fitters:

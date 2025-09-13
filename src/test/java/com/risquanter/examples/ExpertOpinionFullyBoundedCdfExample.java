@@ -1,7 +1,7 @@
-package com.risquanter.metalog.examples;
+package com.risquanter.examples;
 
-import com.risquanter.metalog.FullyBoundedMetalog;
-import com.risquanter.metalog.estimate.SVDFullyBoundedFitter;
+import com.risquanter.metalog.Metalog;
+import com.risquanter.metalog.estimate.QPFitter;
 
 /**
  * Expert‐Opinion CDF Example using a fully‐bounded Metalog (support [L,U]).
@@ -15,7 +15,7 @@ import com.risquanter.metalog.estimate.SVDFullyBoundedFitter;
  *
  * Steps:
  *   1) Define the expert’s (pᵢ, Qᵢ) triplet.
- *   2) Fit a 3-term fully-bounded metalog with support [L=3.0, U=10.0].
+ *   2) Fit a 3-term fully-bounded metalog with support [LS=3.0, US=10.0].
  *   3) Generate evenly-spaced p values in [0.05, 0.95] and emit JSON
  *      of { "quantile": Q(p), "p": p } for Vega-Lite CDF plotting.
  */
@@ -24,19 +24,13 @@ public class ExpertOpinionFullyBoundedCdfExample {
         // 1) Expert quantiles
         double[] pVals      = { 0.05, 0.50, 0.95 };
         double[] xVals      = {  3.0,  6.0, 10.0 };
-        // choose true support bounds so  L < min(xVals) < max(xVals) < U
+        // choose true support bounds so  LB < min(xVals) < max(xVals) < UB
         double   lowerBound =  0.0;    // e.g. no negative days
         double   upperBound = 20.0;    // safely above the pessimistic estimate
         int      terms      = pVals.length;
 
         // 2) Fit fully-bounded metalog
-        SVDFullyBoundedFitter fitter =
-            new SVDFullyBoundedFitter(pVals, xVals, terms, lowerBound, upperBound);
-        double[] coeffs   = fitter.fit();
-
-        // 3) Wrap and sample
-        FullyBoundedMetalog metalog =
-            new FullyBoundedMetalog(coeffs, lowerBound, upperBound);
+        Metalog metalog = QPFitter.with(pVals, xVals, terms).lower(lowerBound).upper(upperBound).fit();
 
         double pMin     = pVals[0];
         double pMax     = pVals[pVals.length - 1];

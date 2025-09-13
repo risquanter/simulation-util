@@ -1,9 +1,9 @@
-package com.risquanter.metalog.examples;
+package com.risquanter.examples;
 
 import java.util.stream.IntStream;
 
 import com.risquanter.metalog.Metalog;
-import com.risquanter.metalog.api.QPFitter;
+import com.risquanter.metalog.estimate.QPFitter;
 
 public class ExpertOpinionLowerBoundedConstrainedMetalogDemo {
     public static void main(String[] args) {
@@ -13,6 +13,7 @@ public class ExpertOpinionLowerBoundedConstrainedMetalogDemo {
         double[] xVals = { 17.0, 24.0, 35.0 };
         int terms = pVals.length + 1; // = 4 for smoother fitting
 
+        // 2) Fitting parameters - same as defaults, but explicit here to present the API
         double epsilon = 1e-6;
         double[] gridP = IntStream.rangeClosed(1, 99)
                 .mapToDouble(i -> i / 100.0)

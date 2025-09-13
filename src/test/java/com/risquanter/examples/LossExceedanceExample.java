@@ -1,13 +1,12 @@
-package com.risquanter.metalog.examples;
+package com.risquanter.examples;
 
 import java.util.Random;
 import java.util.StringJoiner;
-import java.util.stream.IntStream;
 
 import org.apache.commons.math3.distribution.LogNormalDistribution;
 
 import com.risquanter.metalog.Metalog;
-import com.risquanter.metalog.estimate.QPBoundedConstrainedFitter;
+import com.risquanter.metalog.estimate.QPFitter;
 
 /**
  * Demonstrates fitting a metalog to simulated aggregate losses,
@@ -47,15 +46,7 @@ public class LossExceedanceExample {
         }
 
         // 3) Fit metalog via QP with a 0 lower bound
-        double epsilon    = 1e-6;
-        double[] gridP    = IntStream.rangeClosed(1, 99)
-                                      .mapToDouble(i -> i / 100.0)
-                                      .toArray();
-        double   lowerBound = 0.0;
-        QPBoundedConstrainedFitter fitter =
-            new QPBoundedConstrainedFitter(p, x, K, epsilon, gridP, lowerBound, null);
-        double[] coeffs = fitter.fit();
-        Metalog metalog  = new Metalog(coeffs);
+        Metalog metalog  = QPFitter.with(p, x, K).lower(0.0).fit();
 
         // 4) First, print simple LEC lines: “p -> threshold, exceed”
         int grid = 100;

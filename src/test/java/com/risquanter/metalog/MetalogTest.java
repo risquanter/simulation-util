@@ -3,7 +3,7 @@ package com.risquanter.metalog;
 
 import org.junit.jupiter.api.Test;
 
-import com.risquanter.metalog.estimate.SVDFitter;
+import com.risquanter.metalog.estimate.QPFitter;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -91,11 +91,8 @@ class MetalogTest {
         }
 
         // 2) Fit a 2-term metalog (should recover [a0≈0, a1≈1])
-        SVDFitter fitter = new SVDFitter(pVals, xVals, /*terms=*/2);
-        double[] fittedCoefficients = fitter.fit();
+        Metalog metalog = QPFitter.with(pVals, xVals, 2).fit();
 
-        // 3) Verify positive PDF over the interior (0.001…0.998)
-        Metalog metalog = new Metalog(fittedCoefficients);
         for (double p = 0.001; p < 0.999; p += 0.001) {
             double pdf = metalog.pdf(p);
             assertTrue(pdf > 0.0,
