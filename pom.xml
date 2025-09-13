@@ -5,7 +5,7 @@
 
     <groupId>com.example</groupId>
     <artifactId>java-metalog-distribution</artifactId>
-    <version>0.1.0</version>
+    <version>0.4.0</version>
     <name>Java Metalog Distribution</name>
     <description>Implementation of the Metalog distribution in Java</description>
     <url>https://github.com/example/metalog-distribution</url>
