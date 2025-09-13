@@ -1,10 +1,8 @@
-package com.risquanter.metalog.estimate;
+package com.risquanter.metalog;
 
 import org.ojalgo.optimisation.ExpressionsBasedModel;
 import org.ojalgo.optimisation.Expression;
 import org.ojalgo.optimisation.Variable;
-
-import com.risquanter.metalog.Metalog;
 
 /**
  * QP-Bounded Metalog Fitter
@@ -71,7 +69,7 @@ import com.risquanter.metalog.Metalog;
  *   • D[k,j] = Tʹ_j(gridP[k])        (derivatives on the enforce grid)
  *   • T[k,j] = T_j(gridP[k])         (basis on the enforce grid)
  */
-public class QPBoundedConstrainedFitter {
+class QPBoundedConstrainedFitter {
 
     private final double[] pData;    // length K
     private final double[] xData;    // length K
@@ -81,7 +79,7 @@ public class QPBoundedConstrainedFitter {
     private final Double lowerBound; // optional
     private final Double upperBound; // optional
 
-    public QPBoundedConstrainedFitter(
+    QPBoundedConstrainedFitter(
             double[] pData,
             double[] xData,
             int terms,
@@ -104,7 +102,7 @@ public class QPBoundedConstrainedFitter {
         this.upperBound = upperBound;
     }
 
-    public double[] fit() {
+    double[] fit() {
 
         final int K = pData.length;
         final int n = terms;

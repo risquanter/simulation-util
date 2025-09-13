@@ -1,11 +1,5 @@
-com/risquanter/metalog/UpperBoundedMetalogFitter.class
-com/risquanter/metalog/App.class
-com/risquanter/metalog/FullyBoundedMetalog.class
-com/risquanter/metalog/FullyBoundedMetalogFitter.class
-com/risquanter/metalog/LowerBoundedMetalogFitter.class
+com/risquanter/metalog/QPFitter$Builder.class
+com/risquanter/metalog/QPBoundedConstrainedFitter.class
+com/risquanter/metalog/QPFitter$Options.class
 com/risquanter/metalog/Metalog.class
-com/risquanter/metalog/ExpertOpinionFullyBoundedCdfExample.class
-com/risquanter/metalog/UpperBoundedMetalog.class
-com/risquanter/metalog/Example.class
-com/risquanter/metalog/MetalogFitter.class
-com/risquanter/metalog/LowerBoundedMetalog.class
+com/risquanter/metalog/QPFitter.class

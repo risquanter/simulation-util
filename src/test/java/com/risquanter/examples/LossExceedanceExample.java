@@ -6,7 +6,7 @@ import java.util.StringJoiner;
 import org.apache.commons.math3.distribution.LogNormalDistribution;
 
 import com.risquanter.metalog.Metalog;
-import com.risquanter.metalog.estimate.QPFitter;
+import com.risquanter.metalog.QPFitter;
 
 /**
  * Demonstrates fitting a metalog to simulated aggregate losses,

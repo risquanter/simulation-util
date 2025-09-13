@@ -11,7 +11,7 @@
     <url>https://github.com/example/metalog-distribution</url>
 
     <properties>
-        <maven.compiler.source>11</maven.compiler.source>
+        <maven.compiler.source>11</maven.compiler.source> 
         <maven.compiler.target>11</maven.compiler.target>
         <commons.math.version>3.6.1</commons.math.version>
         <junit.version>5.8.2</junit.version>
@@ -41,15 +41,35 @@
 
 
     <build>
-        <pluginManagement>
-            <plugins>
-                <!-- Enable JUnit 5 -->
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-surefire-plugin</artifactId>
-                    <version>3.0.0-M5</version>
-                </plugin>
-            </plugins>
-        </pluginManagement>
+        <resources>
+            <!-- Main resources (none, or your production configs) -->
+            <resource>
+                <directory>src/main/resources</directory>
+                <filtering>false</filtering>
+            </resource>
+        </resources>
+        <testResources>
+            <!-- Test resources (your Vega‐Lite JSON stubs live here) -->
+            <testResource>
+                <directory>src/test/resources</directory>
+            </testResource>
+        </testResources>
+
+        <plugins>
+            <!-- Compile as a Java module -->
+            <plugin>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.8.1</version>
+                <configuration>
+                    <release>11</release>
+                </configuration>
+            </plugin>
+
+            <!-- Use Surefire for JUnit 5 -->
+            <plugin>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>3.0.0-M5</version>
+            </plugin>
+        </plugins>
     </build>
 </project>

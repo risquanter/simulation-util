@@ -4,7 +4,7 @@ import java.util.Arrays;
 import java.util.StringJoiner;
 
 import com.risquanter.metalog.Metalog;
-import com.risquanter.metalog.estimate.QPFitter;
+import com.risquanter.metalog.QPFitter;
 
 public class ObservationalMetalogFitExample {
     public static void main(String[] args) {

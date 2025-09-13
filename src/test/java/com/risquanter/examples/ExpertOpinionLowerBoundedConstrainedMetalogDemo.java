@@ -3,7 +3,7 @@ package com.risquanter.examples;
 import java.util.stream.IntStream;
 
 import com.risquanter.metalog.Metalog;
-import com.risquanter.metalog.estimate.QPFitter;
+import com.risquanter.metalog.QPFitter;
 
 public class ExpertOpinionLowerBoundedConstrainedMetalogDemo {
     public static void main(String[] args) {

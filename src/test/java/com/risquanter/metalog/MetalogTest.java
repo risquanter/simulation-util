@@ -3,8 +3,6 @@ package com.risquanter.metalog;
 
 import org.junit.jupiter.api.Test;
 
-import com.risquanter.metalog.estimate.QPFitter;
-
 import static org.junit.jupiter.api.Assertions.*;
 
 /**

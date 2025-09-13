@@ -1,8 +1,6 @@
-package com.risquanter.metalog.estimate;
+package com.risquanter.metalog;
 
 import java.util.stream.IntStream;
-
-import com.risquanter.metalog.Metalog;
 
 /**
  * Fluent builder for all QP‐based Metalog fitters:

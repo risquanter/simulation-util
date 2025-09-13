@@ -1,7 +1,7 @@
 package com.risquanter.examples;
 
 import com.risquanter.metalog.Metalog;
-import com.risquanter.metalog.estimate.QPFitter;
+import com.risquanter.metalog.QPFitter;
 
 /**
  * Expert‐Opinion CDF Example using a fully‐bounded Metalog (support [L,U]).
