@@ -1,42 +1,49 @@
 package com.risquanter.examples;
 
-import java.util.stream.IntStream;
-
 import com.risquanter.metalog.Metalog;
 import com.risquanter.metalog.QPFitter;
 
+import static com.risquanter.examples.ExampleUtil.loadResourceAsString;
+import static com.risquanter.examples.ExampleUtil.buildObsJson;
+import static com.risquanter.examples.ExampleUtil.buildFitJson;
+import static com.risquanter.examples.ExampleUtil.writeToTestResource;
+
 public class ExpertOpinionLowerBoundedConstrainedMetalogDemo {
     public static void main(String[] args) {
+
+        String outputFilename = "vega-lite-expert-opinion.json";
 
         // 1) Expert’s quantiles
         double[] pVals = { 0.10, 0.50, 0.90 };
         double[] xVals = { 17.0, 24.0, 35.0 };
         int terms = pVals.length + 1; // = 4 for smoother fitting
 
-        // 2) Fitting parameters - same as defaults, but explicit here to present the API
-        double epsilon = 1e-6;
-        double[] gridP = IntStream.rangeClosed(1, 99)
-                .mapToDouble(i -> i / 100.0)
-                .toArray();
-
-        Double lowerBound = 10.0;
+        Double lowerBound = 16.0;
         Double upperBound = 40.0;
 
-        // 3) Fit via constrained QP
-        Metalog metalog = QPFitter.with(pVals, xVals, terms)
-                .epsilon(epsilon)
-                .grid(gridP)
-                .lower(lowerBound)
-                .upper(upperBound)
-                .fit();
+        Metalog metalog = QPFitter.with(pVals, xVals, terms).fit();
 
-        System.out.println("[");
-        for (int i = 1; i < 100; i++) {
-            double p = i / 100.0;
-            double q = metalog.quantile(p);
-            System.out.printf("  {\"quantile\":%.3f, \"p\":%.2f}%s%n",
-                    q, p, (i < 99 ? "," : ""));
-        }
-        System.out.println("]");
+        Metalog boundedMetalog = QPFitter.with(pVals, xVals, 9).lower(lowerBound).upper(upperBound).fit();
+
+        // 4) Build Vega-Lite JSON representation of the original data and for the
+        // fitted CDF for visual comparison
+        // with the original observations highlighted.
+        String obsJson = buildObsJson(xVals, pVals);
+        String fitJson = buildFitJson(metalog);
+        String exactFitJson = buildFitJson(boundedMetalog);
+
+        // 5) Load the stub template from test‐resources
+        String template = loadResourceAsString("/vega-lite-expert-opinion-stub-twolines.json");
+
+        // 6) Replace the two placeholders
+        String spec = template
+                .replace("\"PLACEHOLDER_OBS\"", obsJson)
+                .replace("\"PLACEHOLDER_FIT_1\"", fitJson)
+                .replace("\"PLACEHOLDER_FIT_2\"", exactFitJson);
+
+        // 7) Print out the filled spec
+        writeToTestResource(outputFilename, spec);
+
+        System.out.println("Results written to: " + outputFilename);
     }
 }

@@ -1,21 +1,22 @@
 package com.risquanter.examples;
 
-import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
-import java.util.Scanner;
-import java.util.StringJoiner;
-
 import com.risquanter.metalog.Metalog;
 import com.risquanter.metalog.QPFitter;
+import static com.risquanter.examples.ExampleUtil.loadResourceAsString;
+import static com.risquanter.examples.ExampleUtil.buildObsJson;
+import static com.risquanter.examples.ExampleUtil.buildFitJson;
+import static com.risquanter.examples.ExampleUtil.writeToTestResource;
 
 public class ObservationalMetalogFitExample {
     public static void main(String[] args) {
 
+        String outputFilename = "vega-lite-observational.json";
+
         // 1) Raw observations (n = 9)
         //double[] observations = { 78, 65, 82, 90, 120 /* ! */, 160, 143 /* ! */, /* 127 ,*/ 110, 85 };
         //double[] observations = { 78, 65, 82, 85,  160, 143 ,  127 , 110, 85 };
-        double[] observations = { 78, 65, 82, 90, 160, 143 /* ! */, 127 , 110, 85 };
+        double[] observations = { 78, 65, 82, 90, 160, 143, 127, 110, 85 };
         int n = observations.length;
         Arrays.sort(observations);
 
@@ -54,45 +55,11 @@ public class ObservationalMetalogFitExample {
                 .replace("\"PLACEHOLDER_FIT_2\"", exactFitJson);
 
         // 7) Print out the filled spec
-        System.out.println(spec);
+        writeToTestResource(outputFilename, spec);
+
+        System.out.println("Results written to: " + outputFilename);
 
     }
 
-    private static String loadResourceAsString(String resourcePath) {
-        InputStream in = ObservationalMetalogFitExample.class
-                .getResourceAsStream(resourcePath);
-        if (in == null) {
-            throw new IllegalStateException("Resource not found: " + resourcePath);
-        }
-        // Use Scanner trick to read the entire stream
-        try (Scanner s = new Scanner(in, StandardCharsets.UTF_8.name())) {
-            s.useDelimiter("\\A");
-            return s.hasNext() ? s.next() : "";
-        }
-    }
 
-    private static String buildObsJson(double[] observations, double[] pValues) {
-        StringJoiner obsSj = new StringJoiner(",\n  ", "[\n  ", "\n]");
-        for (int i = 0; i < observations.length; i++) {
-            obsSj.add(String.format(
-                    "{\"quantile\": %.1f, \"p\": %.3f}",
-                    observations[i], pValues[i]));
-        }
-        String obsJson = obsSj.toString();
-        return obsJson;
-    }
-
-    private static String buildFitJson(Metalog metalog) {
-        int grid = 99;
-        StringJoiner fitSj = new StringJoiner(",\n  ", "[\n  ", "\n]");
-        for (int i = 1; i <= grid; i++) {
-            double p = i / 100.0;
-            double q = metalog.quantile(p);
-            fitSj.add(String.format(
-                    "{\"quantile\": %.3f, \"p\": %.2f}",
-                    q, p));
-        }
-        String fitJson = fitSj.toString();
-        return fitJson;
-    }
 }
