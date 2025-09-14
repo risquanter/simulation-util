@@ -3,6 +3,20 @@
   "title": "CDF of expert opinion data Metalog (4-term fit), with original expert estimates highlighted.",
   "layer": [
     {
+      "data": {
+        "values": "PLACEHOLDER_RULES"
+      },
+      "mark": {
+        "type": "rule",
+        "stroke": "midnightblue",
+        "strokeDash": [4, 4],
+        "strokeWidth": 1
+      },
+      "encoding": {
+        "x": { "field": "x", "type": "quantitative" }
+      }
+    },
+    {
       "data": { "values": "PLACEHOLDER_FIT_1" },
       "mark": {
         "type": "line",
@@ -30,14 +44,8 @@
         "strokeWidth": 2
       },
       "encoding": {
-        "x": {
-          "field": "quantile",
-          "type": "quantitative"
-        },
-        "y": {
-          "field": "p",
-          "type": "quantitative"
-        }
+        "x": { "field": "quantile", "type": "quantitative" },
+        "y": { "field": "p",        "type": "quantitative" }
       }
     },
     {
@@ -50,14 +58,20 @@
         "size": 100
       },
       "encoding": {
-        "x": {
-          "field": "quantile",
-          "type": "quantitative"
-        },
-        "y": {
-          "field": "p",
-          "type": "quantitative"
-        }
+        "x": { "field": "quantile", "type": "quantitative" },
+        "y": { "field": "p",        "type": "quantitative" }
+      }
+    },
+    {
+      "data": {
+        "values": "PLACEHOLDER_LABELS"
+      },
+      "mark": {"type": "text", "dx": -30, "dy": -5, "fontSize": 12},
+      "encoding": {
+        "x": {"field": "quantile", "type": "quantitative"},
+        "y": {"field": "p", "type": "quantitative"},
+        "text": {"field": "label", "type": "nominal"},
+        "color": {"field": "color", "type": "nominal", "scale": null}
       }
     }
   ]

@@ -70,4 +70,38 @@ public class ExampleUtil {
         }
     }
 
+    static String buildRulesJson(double lower, double upper) {
+
+        StringJoiner rulesSj = new StringJoiner(",\n  ", "[\n  ", "\n]");
+
+        rulesSj.add(String.format(
+                    "{\"x\": %.3f}",
+                    lower));
+        rulesSj.add(String.format(
+                    "{\"x\": %.3f}",
+                    upper));
+        
+        String rulesJson = rulesSj.toString();
+        return rulesJson;
+    }
+
+    static String buildLabelJson(Metalog metalog, Metalog boundedMetalog) {
+
+        StringJoiner labelSj = new StringJoiner(",\n  ", "[\n  ", "\n]");
+
+        var pBounded = 0.95;
+        var qBounded = boundedMetalog.quantile(pBounded);
+        var pUnbounded = 0.05;
+        var qUnbounded = metalog.quantile(pUnbounded);
+        labelSj.add(String.format(
+                    "{\"quantile\": %.3f, \"p\": %.2f, \"label\": \"bounded\", \"color\": \"midnightblue\"}",
+                    qBounded, pBounded));
+        labelSj.add(String.format(
+                    "{\"quantile\": %.3f, \"p\": %.2f, \"label\": \"unbounded\", \"color\": \"darkred\"}",
+                    qUnbounded, pUnbounded));
+        
+        String labelJson = labelSj.toString();
+        return labelJson;
+    }
+
 }
