@@ -55,7 +55,7 @@ public class RiskHierarchyMetalogDemo {
             double mu      = meanLog;
 
             // analytic mixture inverse‐CDF
-            LogNormalDistribution lnDist = new LogNormalDistribution(mu, sigma);
+            LogNormalDistribution lnDist = new LogNormalDistribution(hdrRng, mu, sigma);
 
             // build quantile anchors
             List<Double> pAnchors = new ArrayList<>();

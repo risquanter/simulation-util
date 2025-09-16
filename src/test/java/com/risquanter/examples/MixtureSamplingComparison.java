@@ -1,18 +1,11 @@
 package com.risquanter.examples;
 
 import org.apache.commons.math3.distribution.LogNormalDistribution;
-// *not* java.util.random.RandomGenerator
 import org.apache.commons.math3.random.RandomGenerator;
 import org.apache.commons.math3.random.Well19937c;
 
-import com.risquanter.metalog.Metalog;
-import com.risquanter.metalog.QPFitter;
-
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 import java.util.Random;
-import java.util.StringJoiner;
 
 
 public class MixtureSamplingComparison {
