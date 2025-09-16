@@ -45,7 +45,7 @@ public class RiskHierarchyMetalogPGrid {
 
             // analytic tail CDF
             LogNormalDistribution lnDist = 
-                new LogNormalDistribution(mu, sigma);
+                new LogNormalDistribution(hdrRng, mu, sigma);
 
             // build quantile anchors at fitP
             List<Double> pAnch = new ArrayList<>();
@@ -82,6 +82,9 @@ public class RiskHierarchyMetalogPGrid {
             }
             // sample C
             double uC = uniRng.nextDouble();
+            if (uC < 0.001) {
+                System.out.println("uC=" + uC);
+            }
             double sumABC = sumAB + leafMetalog[2].quantile(uC);
 
             ab[i]  = sumAB;
