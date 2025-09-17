@@ -55,7 +55,7 @@ public class ExpertOpinionDemo2 {
         String rulesJson = buildRulesJson(lowerBound, upperBound);
 
         // 5) Load the stub template from test‐resources
-        String template = loadResourceAsString("/vega-lite-expert-opinion-1-stub-twolines.json");
+        String template = loadResourceAsString("/vega-lite-expert-opinion-2-stub-twolines.json");
 
         // 6) Replace the two placeholders
         String spec = template

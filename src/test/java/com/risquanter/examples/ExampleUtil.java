@@ -13,6 +13,9 @@ import com.risquanter.metalog.Metalog;
 
 public class ExampleUtil {
 
+    private static final int STEPS = 100; // prints p=0.00…1.00
+    private static final double EPS   = 1e-12;  
+
     static String loadResourceAsString(String resourcePath) {
         InputStream in = ObservationalMetalogFitExample.class
                 .getResourceAsStream(resourcePath);
@@ -37,18 +40,32 @@ public class ExampleUtil {
         return obsJson;
     }
 
-    static String buildFitJson(Metalog metalog) {
-        int grid = 99;
-        StringJoiner fitSj = new StringJoiner(",\n  ", "[\n  ", "\n]");
-        for (int i = 1; i <= grid; i++) {
-            double p = i / 100.0;
-            double q = metalog.quantile(p);
-            fitSj.add(String.format(
-                    "{\"quantile\": %.3f, \"p\": %.2f}",
-                    q, p));
+    /**
+     * Dumps a full CDF trace from p=0.00 → p=1.00 by calling
+     * m.quantile(clamp(p, EPS, 1-EPS))
+     * for each step. This single method works for both bounded
+     * and unbounded Metalogs: it will result in exact flat caps
+     * when bounds are in force, and natural extrapolation otherwise.
+     */
+    static String buildFitJson(Metalog m) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("[\n");
+
+        for (int i = 0; i <= STEPS; i++) {
+            double p = i / (double) STEPS;
+
+            // clamp into (EPS,1-EPS) so quantile(0.0) or quantile(1.0) never gets called
+            double pForQ = Math.min(Math.max(p, EPS), 1.0 - EPS);
+            double q = m.quantile(pForQ);
+
+            String comma = (i < STEPS ? "," : "");
+            sb.append(String.format(
+                    "  {\"p\": %.3f, \"quantile\": %.4f}%s%n",
+                    p, q, comma));
         }
-        String fitJson = fitSj.toString();
-        return fitJson;
+
+        sb.append("]");
+        return sb.toString();
     }
 
     public static void writeToTestResource(String filename, String content) {
@@ -75,12 +92,12 @@ public class ExampleUtil {
         StringJoiner rulesSj = new StringJoiner(",\n  ", "[\n  ", "\n]");
 
         rulesSj.add(String.format(
-                    "{\"x\": %.3f}",
-                    lower));
+                "{\"x\": %.3f}",
+                lower));
         rulesSj.add(String.format(
-                    "{\"x\": %.3f}",
-                    upper));
-        
+                "{\"x\": %.3f}",
+                upper));
+
         String rulesJson = rulesSj.toString();
         return rulesJson;
     }
@@ -94,12 +111,12 @@ public class ExampleUtil {
         var pUnbounded = 0.05;
         var qUnbounded = metalog.quantile(pUnbounded);
         labelSj.add(String.format(
-                    "{\"quantile\": %.3f, \"p\": %.2f, \"label\": \"bounded\", \"color\": \"midnightblue\"}",
-                    qBounded, pBounded));
+                "{\"quantile\": %.3f, \"p\": %.2f, \"label\": \"bounded\", \"color\": \"midnightblue\"}",
+                qBounded, pBounded));
         labelSj.add(String.format(
-                    "{\"quantile\": %.3f, \"p\": %.2f, \"label\": \"unbounded\", \"color\": \"darkred\"}",
-                    qUnbounded, pUnbounded));
-        
+                "{\"quantile\": %.3f, \"p\": %.2f, \"label\": \"unbounded\", \"color\": \"darkred\"}",
+                qUnbounded, pUnbounded));
+
         String labelJson = labelSj.toString();
         return labelJson;
     }

@@ -12,10 +12,11 @@ import static com.risquanter.examples.ExampleUtil.loadResourceAsString;
 import static com.risquanter.examples.ExampleUtil.buildObsJson;
 import static com.risquanter.examples.ExampleUtil.buildRulesJson;
 import static com.risquanter.examples.ExampleUtil.buildLabelJson;
+import static com.risquanter.examples.ExampleUtil.buildFitJson;;
 
 public class ExpertOpinionDemo1 {
     private static final double EPS   = 1e-12;  // must match ε-anchors in the fitter
-    private static final int    STEPS = 100;    // prints p=0.00…1.00
+
 
     public static void main(String[] args) {
         String outputFilename = "vega-lite-expert-opinion-1.json";
@@ -23,7 +24,7 @@ public class ExpertOpinionDemo1 {
         // 1) Expert’s quantiles
         double[] pVals = {0.10, 0.50, 0.90};
         double[] xVals = {17.0, 24.0, 35.0};
-        int terms      = pVals.length + 1;  // smoother fit
+        int terms      = pVals.length;  
 
         Double lowerBound = 16.0;
         Double upperBound = 40.0;
@@ -67,34 +68,7 @@ public class ExpertOpinionDemo1 {
         System.out.printf("Q(1-eps)  = %.12f%n", metalogBounded.quantile(1 - EPS));
     }
 
-    /**
-     * Dumps a full CDF trace from p=0.00 → p=1.00 by calling
-     *   m.quantile(clamp(p, EPS, 1-EPS))
-     * for each step.  This single method works for both bounded
-     * and unbounded Metalogs: you will observe exact flat caps
-     * when bounds are in force, and natural extrapolation otherwise.
-     */
-    private static String buildFitJson(Metalog m) {
-        StringBuilder sb = new StringBuilder();
-        sb.append("[\n");
-
-        for (int i = 0; i <= STEPS; i++) {
-            double p = i / (double)STEPS;
-
-            // clamp into (EPS,1-EPS) so quantile(0.0) or quantile(1.0) never gets called
-            double pForQ = Math.min(Math.max(p, EPS), 1.0 - EPS);
-            double q     = m.quantile(pForQ);
-
-            String comma = (i < STEPS ? "," : "");
-            sb.append(String.format(
-                "  {\"p\": %.3f, \"quantile\": %.4f}%s%n",
-                p, q, comma
-            ));
-        }
-
-        sb.append("]");
-        return sb.toString();
-    }
+    
 
     /**
      * Writes `content` to src/test/resources/`filename`, creating
