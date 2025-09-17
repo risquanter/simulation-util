@@ -1,7 +1,7 @@
 // File: QPFitter.java
 package com.risquanter.metalog;
 
-import java.util.Arrays;
+
 import java.util.stream.IntStream;
 
 /**

@@ -5,7 +5,6 @@ import org.ojalgo.optimisation.ExpressionsBasedModel;
 import org.ojalgo.optimisation.Expression;
 import org.ojalgo.optimisation.Variable;
 
-import java.util.Arrays;
 
 /**
  * Internal QP that only enforces strict monotonicity (dQ/dp ≥ ε)
