@@ -1,56 +1,43 @@
+// File: QPFitter.java
 package com.risquanter.metalog;
 
+import java.util.Arrays;
 import java.util.stream.IntStream;
 
 /**
- * Fluent builder for all QP‐based Metalog fitters:
- * – Unbounded (default)
- * – Lower‐bounded
- * – Upper‐bounded
- * – Fully‐bounded
+ * Fluent Metalog QP-fitter that uses Keelin’s transform approach for bounds:
+ * • unbounded: raw x
+ * • lower-bounded: z = ln(x - L)
+ * • upper-bounded: z = -ln(U - x)
+ * • fully-bounded: z = logit((x - L)/(U - L))
+ *
+ * Internally always solves a pure monotonicity-only QP on z, then wraps
+ * the raw unbounded Metalog to invert the transform in quantile(p).
  */
 public class QPFitter {
   public static Options with(double[] p, double[] x, int terms) {
     return new Builder(p, x, terms);
   }
 
-  /**
-   * Stage that collects all optional parameters.
-   * You can call these in any order, any number of times.
-   */
   public interface Options {
-    /** regularization epsilon (default 1e-6) */
     Options epsilon(double eps);
 
-    /**
-     * grid of p's at which to enforce bounds
-     * (default = 1/100…99/100)
-     */
     Options grid(double[] gridP);
 
-    /** enforce Q(p) ≥ L */
     Options lower(double L);
 
-    /** enforce Q(p) ≤ U */
     Options upper(double U);
 
-    /** finalize and fit */
     Metalog fit();
   }
 
   private static class Builder implements Options {
     private final double[] p, x;
     private final int terms;
-
-    // defaults
     private double epsilon = 1e-6;
-    //default value set in fit() if null
     private double[] gridP = null;
-    //optional, the Fitter constructor accepts nulls
-    private Double lower = null;
-    private Double upper = null;
+    private Double lower = null, upper = null;
 
-    //mandatory params in constructor
     Builder(double[] p, double[] x, int terms) {
       this.p = p;
       this.x = x;
@@ -83,19 +70,61 @@ public class QPFitter {
 
     @Override
     public Metalog fit() {
+      // 1) build default gridP on [ε … 1−ε]
       if (this.gridP == null) {
-        this.gridP = IntStream.rangeClosed(1, 99)
-            .mapToDouble(i -> i / 100.0)
+        int G = 100;
+        double eps = 1e-12;
+        this.gridP = IntStream.rangeClosed(0, G)
+            .mapToDouble(i -> eps + (1 - 2 * eps) * i / (double) G)
             .toArray();
       }
 
-      QPBoundedConstrainedFitter fitter = new QPBoundedConstrainedFitter(
-          p, x, terms, epsilon, gridP, lower, upper);
+      // 2) transform x→z
+      double[] z = new double[x.length];
+      if (lower != null && upper != null) {
+        double L = lower, U = upper, span = U - L;
+        for (int i = 0; i < x.length; i++) {
+          double y = (x[i] - L) / span;
+          z[i] = Math.log(y / (1 - y)); // logit
+        }
+      } else if (lower != null) {
+        double L = lower;
+        for (int i = 0; i < x.length; i++) {
+          z[i] = Math.log(x[i] - L);
+        }
+      } else if (upper != null) {
+        double U = upper;
+        for (int i = 0; i < x.length; i++) {
+          z[i] = -Math.log(U - x[i]);
+        }
+      } else {
+        System.arraycopy(x, 0, z, 0, x.length);
+      }
 
-      double[] coeffs = fitter.fit();
+      // 3) fit an unbounded metalog on (p, z)
+      QPUnboundedConstrainedFitter qp = new QPUnboundedConstrainedFitter(
+          p, z, terms, epsilon, gridP);
+      double[] a = qp.fit();
+      Metalog mZ = new Metalog(a);
 
-      Metalog metalog = new Metalog(coeffs);
-      return metalog;
+      // 4) wrap mZ to invert the transform
+      return new Metalog(a) {
+        @Override
+        public double quantile(double p) {
+          double zz = mZ.quantile(p);
+          if (lower != null && upper != null) {
+            double L = lower, U = upper;
+            double frac = 1.0 / (1.0 + Math.exp(-zz)); // logistic
+            return L + frac * (U - L);
+          } else if (lower != null) {
+            return lower + Math.exp(zz);
+          } else if (upper != null) {
+            return upper - Math.exp(-zz);
+          } else {
+            return zz;
+          }
+        }
+      };
     }
   }
 }
