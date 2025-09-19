@@ -22,7 +22,7 @@ public class LossExceedanceExample {
 
     public static void main(String[] args) {
 
-        String outputFilename = "vega-lite-lec-stub.json";
+        //String outputFilename = "vega-lite-lec-stub.json"; // not used in this example at the moment
 
         int sims = 10_000;
         Random rnd = new Random(42);
