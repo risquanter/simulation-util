@@ -9,9 +9,9 @@ import org.apache.commons.math3.util.FastMath;
  * with special handling of term j==2 so that the first “power×logit” term
  * appears at index 2, and pure φ-powers and φ×logit alternate thereafter.
  */
-public class Metalog {
+public class Metalog {   
     private static final int MAX_TERMS = 20;
-
+ 
     private final double[] a;   // coefficients a₀…a_{terms-1}
     private final int terms;    // number of terms in use
 

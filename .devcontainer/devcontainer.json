@@ -1,0 +1,25 @@
+{
+  "name": "Java-Scala-SDKMAN-GraalVM25",
+  "build": { "dockerfile": "Dockerfile" },
+  "workspaceFolder": "/workspace",
+  "workspaceMount": "source=${localWorkspaceFolder},target=/workspace,type=bind",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "redhat.java",
+        "vscjava.vscode-java-pack"
+      ],
+      "settings": {
+        "java.jdt.ls.java.home": "/home/vscode/.sdkman/candidates/java/current",
+        "java.configuration.runtimes": [
+          {
+            "name": "JavaSE-24",
+            "path": "/home/vscode/.sdkman/candidates/java/current",
+            "default": true
+          }
+        ],
+        "java.trace.server": "verbose"
+      }
+    }
+  }
+}
