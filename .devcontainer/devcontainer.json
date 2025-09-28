@@ -1,6 +1,8 @@
 {
   "name": "Java-Scala-SDKMAN-GraalVM25",
-  "build": { "dockerfile": "Dockerfile" },
+  "build": {
+    "dockerfile": "Dockerfile"
+  },
   "workspaceFolder": "/workspace",
   "workspaceMount": "source=${localWorkspaceFolder},target=/workspace,type=bind",
   "customizations": {
@@ -18,8 +20,20 @@
             "default": true
           }
         ],
-        "java.trace.server": "verbose"
+        "java.trace.server": "verbose",
+        "files.watcherUsePolling": true,
+        "git.autorefresh": true,
+        "git.decorations.enabled": true,
+        "git.refreshOnWindowFocus": true
       }
     }
+  },
+  "remoteEnv": {
+    "CHOKIDAR_USEPOLLING": "true",
+    "CHOKIDAR_INTERVAL": "50"
+  },
+  "containerEnv": {
+    "CHOKIDAR_USEPOLLING": "true",
+    "CHOKIDAR_INTERVAL": "50"
   }
 }
