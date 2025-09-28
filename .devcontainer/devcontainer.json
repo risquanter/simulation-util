@@ -1,4 +1,4 @@
-{
+﻿{
   "name": "Java-Scala-SDKMAN-GraalVM25",
   "build": {
     "dockerfile": "Dockerfile"

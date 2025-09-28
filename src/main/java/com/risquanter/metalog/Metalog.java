@@ -1,4 +1,4 @@
-package com.risquanter.metalog;
+﻿package com.risquanter.metalog;
 
 import org.apache.commons.math3.util.FastMath;
 

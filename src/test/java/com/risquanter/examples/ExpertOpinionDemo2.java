@@ -1,4 +1,4 @@
-package com.risquanter.examples;
+﻿package com.risquanter.examples;
 
 import com.risquanter.metalog.Metalog;
 import com.risquanter.metalog.QPFitter;

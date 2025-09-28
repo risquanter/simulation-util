@@ -1,4 +1,4 @@
-{
+﻿{
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
   "title": "CDF of expert opinion data Metalog (4-term fit), with original expert estimates highlighted.",
   "layer": [

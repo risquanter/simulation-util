@@ -1,4 +1,4 @@
-// File: QPUnboundedConstrainedFitter.java
+﻿// File: QPUnboundedConstrainedFitter.java
 package com.risquanter.metalog;
 
 import org.ojalgo.optimisation.ExpressionsBasedModel;

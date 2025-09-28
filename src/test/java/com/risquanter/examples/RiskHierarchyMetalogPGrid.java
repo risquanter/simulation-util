@@ -1,4 +1,4 @@
-package com.risquanter.examples;
+﻿package com.risquanter.examples;
 
 import org.apache.commons.math3.distribution.LogNormalDistribution;
 import org.apache.commons.math3.random.Well19937c;

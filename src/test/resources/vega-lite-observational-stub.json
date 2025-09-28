@@ -1,4 +1,4 @@
-{
+﻿{
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
   "title": "CDF of observational data Metalog (5-term fit), with original observations and their estimated probabilities highlighted.",
   "data": {

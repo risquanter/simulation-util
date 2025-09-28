@@ -1,4 +1,4 @@
-# Metalog Distribution (Java)
+﻿# Metalog Distribution (Java)
 
 This project provides an implementation of the Metalog distribution in Java, including:
 

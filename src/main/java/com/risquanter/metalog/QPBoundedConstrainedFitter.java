@@ -1,4 +1,4 @@
-package com.risquanter.metalog;
+﻿package com.risquanter.metalog;
 
 import org.ojalgo.optimisation.ExpressionsBasedModel;
 import org.ojalgo.optimisation.Expression;
