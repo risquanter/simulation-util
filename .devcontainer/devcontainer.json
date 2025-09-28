@@ -24,7 +24,8 @@
         "files.watcherUsePolling": true,
         "git.autorefresh": true,
         "git.decorations.enabled": true,
-        "git.refreshOnWindowFocus": true
+        "git.refreshOnWindowFocus": true, 
+        "files.eol": "\n"
       }
     }
   },

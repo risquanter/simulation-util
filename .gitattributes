@@ -1,2 +1,4 @@
 # enforce LF for all JSON
 *.json text eol=lf
+* text=auto eol=lf
+
