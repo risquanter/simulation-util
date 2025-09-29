@@ -11,18 +11,23 @@
     <url>https://github.com/example/metalog-distribution</url>
 
     <properties>
-        <maven.compiler.source>24</maven.compiler.source> 
-        <maven.compiler.target>24</maven.compiler.target>
+        <maven.compiler.source>25</maven.compiler.source> 
+        <maven.compiler.target>25</maven.compiler.target>
         <commons.math.version>3.6.1</commons.math.version>
         <junit.version>5.8.2</junit.version>
     </properties>
 
     <dependencies>
-        <!-- Apache Commons Math for linear algebra -->
+        <!-- Linear algebra -->
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-math3</artifactId>
             <version>${commons.math.version}</version>
+        </dependency>
+            <dependency>
+            <groupId>org.ojalgo</groupId>
+            <artifactId>ojalgo</artifactId>
+            <version>56.0.0</version>
         </dependency>
 
         <!-- JUnit Jupiter for testing -->
@@ -32,11 +37,7 @@
             <version>${junit.version}</version>
             <scope>test</scope>
         </dependency>
-        <dependency>
-            <groupId>org.ojalgo</groupId>
-            <artifactId>ojalgo</artifactId>
-            <version>56.0.0</version>
-        </dependency>
+
     </dependencies>
 
 

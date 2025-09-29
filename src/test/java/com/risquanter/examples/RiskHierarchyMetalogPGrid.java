@@ -32,8 +32,8 @@ public class RiskHierarchyMetalogPGrid {
         for (int r = 0; r < inputs.length; r++) {
             double lb    = inputs[r][0];
             double ub    = inputs[r][1];
-            double pLoss = inputs[r][2];
-            double pNo   = 1.0 - pLoss;
+            //double pLoss = inputs[r][2];
+            //double pNo   = 1.0 - pLoss;
 
             // pick 9 points in the (0,1) → tail  
             // we only anchor the nonzero portion at normalized probabilities

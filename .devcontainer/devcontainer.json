@@ -9,7 +9,8 @@
     "vscode": {
       "extensions": [
         "redhat.java",
-        "vscjava.vscode-java-pack"
+        "vscjava.vscode-java-pack", 
+        "redhat.vscode-xml"
       ],
       "settings": {
         "java.jdt.ls.java.home": "/home/vscode/.sdkman/candidates/java/current",
