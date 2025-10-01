@@ -1,0 +1,117 @@
+# .github/workflows/release.yml
+name: Release (YubiKey-signed)
+
+on:
+  workflow_dispatch:
+    inputs:
+      run_id:
+        description: 'Build run ID to release'
+        required: true
+
+permissions:
+  contents: write
+  id-token: write
+
+jobs:
+  sign-and-publish:
+    runs-on: [self-hosted, yubikey-signing]
+    environment: release
+    
+    # Add environment variables at job level
+    env:
+      ARTIFACT_RUN_ID: ${{ inputs.run_id }}
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install tools
+        run: |
+          sudo apt-get update -y
+          sudo apt-get install -y jq tar gpg2 scdaemon pcscd pinentry-curses
+
+      - name: Download unsigned artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: unsigned-artifacts-${{ inputs.run_id }}
+          path: /tmp/release-artifacts
+
+      - name: Download provenance
+        uses: actions/download-artifact@v4
+        with:
+          name: provenance-${{ inputs.run_id }}
+          path: /tmp/release-provenance
+
+      - name: Extract and verify
+        run: |
+          mkdir -p /tmp/artifacts
+          tar xzf /tmp/release-artifacts/artifacts.tgz -C /tmp/artifacts
+          tar xzf /tmp/release-provenance/provenance.tgz -C /tmp/artifacts || true
+          cd /tmp/artifacts
+          sha256sum -c checksums.sha256
+
+      - name: (Optional) Verify Sigstore provenance
+        run: |
+          for s in /tmp/artifacts/*.sigstore.json; do
+            [ -f "$s" ] && sigstore verify --bundle "$s" || true
+          done
+
+      - name: Sign artifacts with YubiKey (interactive)
+        env:
+          GPG_TTY: /dev/tty1
+        run: |
+          cd /tmp/artifacts
+          for a in *.jar; do
+            echo "Signing $a"
+            gpg --batch --yes --detach-sign --armor --output "${a}.asc" "$a"
+          done
+
+      - name: Create signed git tag
+        env:
+          GPG_TTY: /dev/tty1
+        run: |
+          # Using shell parameter expansion for SHA substring
+          RELEASE_TAG="v${GITHUB_SHA:0:8}"
+          git config user.email "ci@risquanter.example"
+          git config user.name "Release Bot"
+          git tag -s "$RELEASE_TAG" -m "Release $RELEASE_TAG"
+          git push origin "$RELEASE_TAG"
+
+      - name: Write settings.xml for Sonatype
+        env:
+          SONATYPE_USERNAME: ${{ secrets.SONATYPE_USERNAME }}
+          SONATYPE_PASSWORD: ${{ secrets.SONATYPE_PASSWORD }}
+        run: |
+          mkdir -p "$HOME/.m2"
+          cat > "$HOME/.m2/settings.xml" << 'EOF'
+          <settings>
+            <servers>
+              <server>
+                <id>ossrh</id>
+                <username>${env.SONATYPE_USERNAME}</username>
+                <password>${env.SONATYPE_PASSWORD}</password>
+              </server>
+            </servers>
+          </settings>
+          EOF
+
+      - name: Deploy to Maven Central
+        env:
+          SONATYPE_USERNAME: ${{ secrets.SONATYPE_USERNAME }}
+          SONATYPE_PASSWORD: ${{ secrets.SONATYPE_PASSWORD }}
+        run: |
+          cd /tmp/artifacts
+          for jar in *.jar; do
+            mvn -B deploy:deploy-file \
+              -Durl=https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/ \
+              -DrepositoryId=ossrh \
+              -Dfile="$jar" \
+              -DpomFile=./pom.xml \
+              -DgroupId=com.risquanter.simulation \
+              -DartifactId=java-metalog-distribution \
+              -Dversion=0.6.0 \
+              -Dpackaging=jar \
+              -DgeneratePom=false
+          done

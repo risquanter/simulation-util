@@ -36,6 +36,17 @@ RUN bash -lc 'curl -s "https://get.sdkman.io" | bash' \
 ENV JAVA_HOME=/home/vscode/.sdkman/candidates/java/current
 ENV PATH=/home/vscode/.sdkman/candidates/maven/current/bin:${JAVA_HOME}/bin:${PATH}
 
+# Switch back to root for system package installation
+USER root
+
+# Add GitHub CLI repository and install gh
+RUN curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg \
+    && chmod go+r /usr/share/keyrings/githubcli-archive-keyring.gpg \
+    && echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | tee /etc/apt/sources.list.d/github-cli.list > /dev/null \
+    && apt-get update \
+    && apt-get install -y gh \
+    && rm -rf /var/lib/apt/lists/*
+
 # Keep runtime user as vscode
 USER 1000
 ENV HOME=/home/vscode

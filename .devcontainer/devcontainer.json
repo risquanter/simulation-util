@@ -9,8 +9,11 @@
     "vscode": {
       "extensions": [
         "redhat.java",
-        "vscjava.vscode-java-pack", 
-        "redhat.vscode-xml"
+        "vscjava.vscode-java-pack",
+        "redhat.vscode-xml",
+        "github.copilot",
+        "github.copilot-chat",
+        "github.vscode-github-actions"
       ],
       "settings": {
         "java.jdt.ls.java.home": "/home/vscode/.sdkman/candidates/java/current",
@@ -25,7 +28,7 @@
         "files.watcherUsePolling": true,
         "git.autorefresh": true,
         "git.decorations.enabled": true,
-        "git.refreshOnWindowFocus": true, 
+        "git.refreshOnWindowFocus": true,
         "files.eol": "\n"
       }
     }
