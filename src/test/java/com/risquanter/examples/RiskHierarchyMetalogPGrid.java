@@ -2,9 +2,11 @@
 
 import org.apache.commons.math3.distribution.LogNormalDistribution;
 import org.apache.commons.math3.random.Well19937c;
+
+import com.risquanter.simulation.Metalog;
+import com.risquanter.simulation.QPFitter;
+
 import org.apache.commons.math3.random.RandomGenerator;
-import com.risquanter.metalog.Metalog;
-import com.risquanter.metalog.QPFitter;
 
 import java.util.ArrayList;
 import java.util.List;

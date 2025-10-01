@@ -3,6 +3,9 @@
 
 import org.junit.jupiter.api.Test;
 
+import com.risquanter.simulation.Metalog;
+import com.risquanter.simulation.QPFitter;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 /**

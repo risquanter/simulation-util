@@ -9,7 +9,7 @@ import java.nio.file.Paths;
 import java.util.Scanner;
 import java.util.StringJoiner;
 
-import com.risquanter.metalog.Metalog;
+import com.risquanter.simulation.Metalog;
 
 public class ExampleUtil {
 

@@ -6,8 +6,8 @@ import java.util.StringJoiner;
 
 import org.apache.commons.math3.distribution.LogNormalDistribution;
 
-import com.risquanter.metalog.Metalog;
-import com.risquanter.metalog.QPFitter;
+import com.risquanter.simulation.Metalog;
+import com.risquanter.simulation.QPFitter;
 
 import static org.apache.commons.math3.util.FastMath.log;
 

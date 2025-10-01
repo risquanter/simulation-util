@@ -1,5 +1,5 @@
 ﻿// File: QPFitter.java
-package com.risquanter.metalog;
+package com.risquanter.simulation;
 
 
 import java.util.stream.IntStream;

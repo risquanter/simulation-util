@@ -1,12 +1,12 @@
 ﻿package com.risquanter.examples;
 
-import com.risquanter.metalog.Metalog;
-import com.risquanter.metalog.QPFitter;
-
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Paths;
+
+import com.risquanter.simulation.Metalog;
+import com.risquanter.simulation.QPFitter;
 
 import static com.risquanter.examples.ExampleUtil.loadResourceAsString;
 import static com.risquanter.examples.ExampleUtil.buildObsJson;

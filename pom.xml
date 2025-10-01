@@ -3,12 +3,12 @@
     xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>com.example</groupId>
+    <groupId>com.risquanter.simulation</groupId>
     <artifactId>java-metalog-distribution</artifactId>
-    <version>0.5.0</version>
+    <version>0.6.0</version>
     <name>Java Metalog Distribution</name>
-    <description>Implementation of the Metalog distribution in Java</description>
-    <url>https://github.com/example/metalog-distribution</url>
+    <description>A Java implementation of the Metalog distribution</description>
+    <url>https://github.com/risquanter/java-metalog-distribution</url>
 
     <properties>
         <maven.compiler.source>25</maven.compiler.source> 
