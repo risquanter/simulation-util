@@ -28,11 +28,25 @@ jobs:
 
       - name: Collect artifacts
         run: |
+          # Create output directory
           mkdir -p out
-          # adjust path if your built artifact lives elsewhere
-          cp target/*.jar out/
-          sha256sum out/*.jar > out/checksums.sha256
-          tar czf out/artifacts.tgz -C out .
+
+          # Wait for any pending file operations
+          sync
+
+          # Copy artifacts with explicit error checking
+          cp target/java-metalog-distribution-*.jar out/ || exit 1
+
+          # Generate checksums
+          cd out
+          sha256sum *.jar > checksums.sha256
+
+          # Create tarball from current directory
+          tar czf artifacts.tgz *
+
+          # Move tarball to final location
+          mv artifacts.tgz ..
+          cd ..
 
       - name: Install sigstore-cli
         run: |
