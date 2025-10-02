@@ -1,4 +1,4 @@
-﻿package com.risquanter.examples;
+package com.risquanter.examples;
 
 import static com.risquanter.examples.ExampleUtil.loadResourceAsString;
 import static com.risquanter.examples.ExampleUtil.buildObsJson;

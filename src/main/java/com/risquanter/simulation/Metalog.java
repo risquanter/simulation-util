@@ -1,4 +1,4 @@
-﻿package com.risquanter.simulation;
+package com.risquanter.simulation;
 
 import org.apache.commons.math3.util.FastMath;
 
@@ -137,3 +137,4 @@ public class Metalog {
         }
     }
 }
+// Test

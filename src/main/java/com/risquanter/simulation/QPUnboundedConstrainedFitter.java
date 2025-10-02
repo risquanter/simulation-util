@@ -1,4 +1,3 @@
-﻿// File: QPUnboundedConstrainedFitter.java
 package com.risquanter.simulation;
 
 import org.ojalgo.optimisation.ExpressionsBasedModel;

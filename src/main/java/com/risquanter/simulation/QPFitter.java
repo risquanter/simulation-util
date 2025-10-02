@@ -1,4 +1,4 @@
-﻿// File: QPFitter.java
+// File: QPFitter.java
 package com.risquanter.simulation;
 
 

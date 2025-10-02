@@ -1,4 +1,9 @@
-﻿{
-    "java.configuration.updateBuildConfiguration": "interactive", 
-    "files.eol": "\n"
+{
+    "java.configuration.updateBuildConfiguration": "interactive",
+    "files.encoding": "utf8",
+    "files.eol": "\n",
+    "files.trimTrailingWhitespace": true,
+    "files.trimFinalNewlines": true,
+    "files.insertFinalNewline": true,
+    "files.autoSave": "off"
 }

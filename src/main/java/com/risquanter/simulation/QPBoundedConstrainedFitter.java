@@ -1,4 +1,4 @@
-﻿package com.risquanter.simulation;
+package com.risquanter.simulation;
 
 import org.ojalgo.optimisation.ExpressionsBasedModel;
 import org.ojalgo.optimisation.Expression;

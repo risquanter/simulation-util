@@ -1,4 +1,4 @@
-﻿package com.risquanter.examples;
+package com.risquanter.examples;
 
 import java.util.Arrays;
 
