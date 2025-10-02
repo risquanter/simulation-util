@@ -65,14 +65,14 @@ jobs:
           cd out
           for file in *.jar; do
             # Generate signature file with certificate bundle
-            cosign sign-blob --yes --bundle-output "${file}.bundle" "$file"
+            cosign sign-blob --yes --bundle "${file}.bundle" --blob "$file"
             # Extract signature and certificate
             jq -r '.Sig' "${file}.bundle" > "${file}.sig"
             jq -r '.Cert' "${file}.bundle" > "${file}.cert"
 
             # Generate SLSA provenance with blob signing
             echo '{"buildType": "https://github.com/actions/runner","builder": {"id": "GitHub Actions"}}' | \
-            cosign sign-blob --yes --bundle-output "${file}.attest.bundle" -
+            cosign sign-blob --yes --bundle "${file}.attest.bundle" --blob -
           done
 
           # Package provenance files
