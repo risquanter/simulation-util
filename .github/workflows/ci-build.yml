@@ -65,10 +65,10 @@ jobs:
           cd out
           for file in *.jar; do
             # Generate signature file
-            cosign sign-blob --output-signature "${file}.sig" "$file"
+            cosign sign-blob --yes --output-signature "${file}.sig" "$file"
 
             # Generate SLSA provenance
-            cosign generate-attestation --predicate <(echo '{"buildType": "https://github.com/actions/runner","builder": {"id": "GitHub Actions"}}') "$file" > "${file}.attest"
+            cosign generate-attestation --yes --predicate <(echo '{"buildType": "https://github.com/actions/runner","builder": {"id": "GitHub Actions"}}') "$file" > "${file}.attest"
           done
 
           # Package provenance files
