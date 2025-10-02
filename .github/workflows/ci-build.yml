@@ -67,8 +67,9 @@ jobs:
             # Generate signature file
             cosign sign-blob --yes --output-signature "${file}.sig" "$file"
 
-            # Generate SLSA provenance
-            cosign attest --yes --predicate <(echo '{"buildType": "https://github.com/actions/runner","builder": {"id": "GitHub Actions"}}') --type slsaprovenance "$file"
+            # Generate SLSA provenance and sign it as a blob
+            PREDICATE=$(echo '{"buildType": "https://github.com/actions/runner","builder": {"id": "GitHub Actions"}}')
+            echo "$PREDICATE" | cosign sign-blob --yes --output-signature "${file}.attest" -
           done
 
           # Package provenance files
