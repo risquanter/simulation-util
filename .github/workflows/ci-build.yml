@@ -48,24 +48,18 @@ jobs:
           mv artifacts.tgz ..
           cd ..
 
-      - name: Install sigstore-cli
-        run: |
-          curl -sSL https://github.com/sigstore/cosign/releases/latest/download/cosign-linux-amd64 > /usr/local/bin/cosign
-          chmod +x /usr/local/bin/cosign
-          curl -sSL https://github.com/sigstore/sigstore/releases/latest/download/sigstore-linux-amd64 > /usr/local/bin/sigstore
-          chmod +x /usr/local/bin/sigstore
+      - name: Install cosign
+        uses: sigstore/cosign-installer@v3.3.0
 
-      - name: Create Sigstore provenance (cosign/sigstore) using OIDC
+      - name: Sign artifacts with Sigstore
         env:
-          COSIGN_EXPERIMENTAL: "1"
+          COSIGN_EXPERIMENTAL: 1
         run: |
-          # Sign each artifact with sigstore using the GitHub OIDC token
-          # This produces a signature bundle that ties the artifact to this workflow run.
-          for f in out/*.jar; do
-            sigstore sign --artifact "$f" --output "${f}.sigstore.json"
+          # Sign each artifact
+          cd out
+          for file in *.jar; do
+            cosign sign-blob --yes "$file"
           done
-          # Also include checksums in provenance directory
-          tar czf out/provenance.tgz out/*.sigstore.json out/checksums.sha256
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
