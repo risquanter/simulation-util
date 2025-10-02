@@ -31,22 +31,28 @@ jobs:
           # Create output directory
           mkdir -p out
 
-          # Wait for any pending file operations
-          sync
+          # Show what's in target
+          echo "Contents of target directory:"
+          ls -la target/
 
-          # Copy artifacts with explicit error checking
+          # Copy artifacts with verification
+          echo "Copying artifacts..."
           cp target/java-metalog-distribution-*.jar out/ || exit 1
+
+          # Show what we copied
+          echo "Contents of out directory:"
+          ls -la out/
 
           # Generate checksums
           cd out
           sha256sum *.jar > checksums.sha256
 
-          # Create tarball from current directory
-          tar czf artifacts.tgz *
+          # Create artifacts archive
+          tar czf artifacts.tgz *.jar checksums.sha256
 
-          # Move tarball to final location
-          mv artifacts.tgz ..
-          cd ..
+          # Show final structure
+          echo "Final out directory contents:"
+          ls -la
 
       - name: Install cosign
         uses: sigstore/cosign-installer@v3.3.0
