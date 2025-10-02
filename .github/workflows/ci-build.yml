@@ -61,11 +61,15 @@ jobs:
         env:
           COSIGN_EXPERIMENTAL: 1
         run: |
-          # Sign each artifact
+          # Sign each artifact and generate provenance
           cd out
           for file in *.jar; do
             cosign sign-blob --yes "$file"
+            cosign attest --predicate <(echo '{"type":"https://slsa.dev/provenance/v0.2"}') --type slsaprovenance "$file"
           done
+
+          # Package provenance files
+          tar czf provenance.tgz *.sig *.attest
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
