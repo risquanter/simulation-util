@@ -65,17 +65,18 @@ jobs:
           cd out
           for file in *.jar; do
             # Generate signature file with certificate bundle
-            cosign sign-blob --yes --bundle "${file}.bundle" "$file"
+            cosign sign-blob --yes --bundle-output "${file}.bundle" "$file"
             # Extract signature and certificate
-            jq -r '.sig' "${file}.bundle" > "${file}.sig"
-            jq -r '.cert' "${file}.bundle" > "${file}.cert"
+            jq -r '.Sig' "${file}.bundle" > "${file}.sig"
+            jq -r '.Cert' "${file}.bundle" > "${file}.cert"
 
-            # Generate SLSA provenance
-            cosign attest --yes --predicate <(echo '{"buildType": "https://github.com/actions/runner","builder": {"id": "GitHub Actions"}}') --type slsaprovenance "$file"
+            # Generate SLSA provenance with blob signing
+            echo '{"buildType": "https://github.com/actions/runner","builder": {"id": "GitHub Actions"}}' | \
+            cosign sign-blob --yes --bundle-output "${file}.attest.bundle" -
           done
 
           # Package provenance files
-          tar czf provenance.tgz *.sig *.attest
+          tar czf provenance.tgz *.sig *.cert *.bundle
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
