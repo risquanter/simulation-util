@@ -30,7 +30,7 @@ RUN bash -lc 'curl -s "https://get.sdkman.io" | bash' \
       && sdk install java 25-graalce \
       && sdk default java 25-graalce \
       && sdk install maven 3.9.11 \
-      && sdk flush archives' 
+      && sdk flush archives'
 
 # Expose JAVA_HOME and add candidates to PATH for non-interactive shells
 ENV JAVA_HOME=/home/vscode/.sdkman/candidates/java/current
@@ -46,6 +46,11 @@ RUN curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | d
     && apt-get update \
     && apt-get install -y gh \
     && rm -rf /var/lib/apt/lists/*
+
+# Install Cosign
+RUN wget -O cosign.deb https://github.com/sigstore/cosign/releases/download/v2.2.2/cosign_2.2.2_amd64.deb \
+    && dpkg -i cosign.deb \
+    && rm cosign.deb
 
 # Keep runtime user as vscode
 USER 1000
