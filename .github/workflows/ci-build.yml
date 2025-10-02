@@ -64,8 +64,11 @@ jobs:
           # Sign each artifact and generate provenance
           cd out
           for file in *.jar; do
-            cosign sign-blob --yes "$file"
-            cosign attest --predicate <(echo '{"type":"https://slsa.dev/provenance/v0.2"}') --type slsaprovenance "$file"
+            # Generate signature file
+            cosign sign-blob --output-signature "${file}.sig" "$file"
+
+            # Generate SLSA provenance
+            cosign generate-attestation --predicate <(echo '{"buildType": "https://github.com/actions/runner","builder": {"id": "GitHub Actions"}}') "$file" > "${file}.attest"
           done
 
           # Package provenance files
