@@ -1,33 +1,89 @@
-// File: QPFitter.java
 package com.risquanter.simulation;
-
 
 import java.util.stream.IntStream;
 
 /**
- * Fluent Metalog QP-fitter that uses Keelin’s transform approach for bounds:
- * • unbounded: raw x
- * • lower-bounded: z = ln(x - L)
- * • upper-bounded: z = -ln(U - x)
- * • fully-bounded: z = logit((x - L)/(U - L))
- *
+ * Fluent Metalog QP-fitter that fits a Metalog distribution to quantile data
+ * using monotonicity-constrained quadratic programming (QP) in transformed
+ * z-space.
+ * <p>
+ * Supports all four boundedness modes via Keelin's transforms:
+ * <ul>
+ * <li>Unbounded: z = x</li>
+ * <li>Lower-bounded: z = ln(x − L)</li>
+ * <li>Upper-bounded: z = −ln(U − x)</li>
+ * <li>Fully-bounded: z = logit((x − L)/(U − L))</li>
+ * </ul>
+ * <p>
+ * The resulting Metalog is wrapped to invert the transform at query time.
  * Internally always solves a pure monotonicity-only QP on z, then wraps
  * the raw unbounded Metalog to invert the transform in quantile(p).
+ *
+ * @author Daniel Agota &lt;danago@risquanter.com&gt;
  */
 public class QPFitter {
+
+  /**
+   * Private constructor to prevent direct instantiation.
+   * Use {@link #with(double[], double[], int)} to create instances.
+   */
+  private QPFitter() {
+  }
+
+  /**
+   * Begins a fluent fitting session for the given percentiles and quantiles.
+   *
+   * @param p     the percentiles (must be in (0,1))
+   * @param x     the corresponding quantile values
+   * @param terms the number of terms to fit
+   * @return a fluent {@link Options} builder
+   */
   public static Options with(double[] p, double[] x, int terms) {
     return new Builder(p, x, terms);
   }
 
+  /**
+   * Fluent builder interface for configuring the Metalog fit.
+   */
   public interface Options {
+
+    /**
+     * Sets the epsilon used for grid generation and numerical stability.
+     *
+     * @param eps the epsilon value
+     * @return this builder
+     */
     Options epsilon(double eps);
 
+    /**
+     * Sets a custom grid of percentiles for monotonicity constraints.
+     *
+     * @param gridP the grid of percentiles
+     * @return this builder
+     */
     Options grid(double[] gridP);
 
+    /**
+     * Sets the lower bound for the distribution.
+     *
+     * @param L the lower bound
+     * @return this builder
+     */
     Options lower(double L);
 
+    /**
+     * Sets the upper bound for the distribution.
+     *
+     * @param U the upper bound
+     * @return this builder
+     */
     Options upper(double U);
 
+    /**
+     * Performs the fit and returns a {@link Metalog} instance.
+     *
+     * @return the fitted Metalog distribution
+     */
     Metalog fit();
   }
 

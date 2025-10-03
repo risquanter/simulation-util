@@ -1,33 +1,74 @@
+/*
+ * java-metalog-distribution - Java implementation of the metalog distribution
+ * Copyright (C) 2025 Daniel Agota <danago@risquanter.com>
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see &lt;https://www.gnu.org/licenses/&gt;.
+ */
 package com.risquanter.simulation;
 
 import org.apache.commons.math3.util.FastMath;
 
 /**
- * Metalog distribution: basis functions, quantile & PDF evaluation.
- * 
- * Updated basisFunctions and basisDerivatives to match Keelin (2016) Eqn (6),
- * with special handling of term j==2 so that the first “power×logit” term
- * appears at index 2, and pure φ-powers and φ×logit alternate thereafter.
+ * Implements the Metalog distribution as described in Keelin (2016),
+ * supporting quantile and PDF evaluation via basis function expansion.
+ * <p>
+ * This class provides:
+ * <ul>
+ * <li>Quantile evaluation via {@link #quantile(double)}</li>
+ * <li>PDF evaluation via {@link #pdf(double)}</li>
+ * <li>Explicit basis functions and their derivatives</li>
+ * </ul>
+ * <p>
+ * The Metalog distribution is parameterized by a coefficient vector {@code a}
+ * and supports up to {@value #MAX_TERMS} terms. Basis functions follow
+ * Keelin's Eqn (6), using logit and centered percentiles.
+ *
+ * @author Daniel Agota &lt;danago@risquanter.com&gt;
  */
-public class Metalog {   
+public class Metalog {
     private static final int MAX_TERMS = 20;
- 
-    private final double[] a;   // coefficients a₀…a_{terms-1}
-    private final int terms;    // number of terms in use
 
+    private final double[] a; // coefficients a₀…a_{terms-1}
+    private final int terms; // number of terms in use
+
+    /**
+     * Constructs a Metalog distribution with the given coefficient vector.
+     *
+     * @param coefficients the expansion coefficients {@code a₀…a_{n−1}}
+     * @throws IllegalArgumentException if {@code coefficients} is null or has
+     *                                  invalid length
+     */
     public Metalog(double[] coefficients) {
         if (coefficients == null) {
             throw new IllegalArgumentException("Coefficient array must not be null");
         }
         if (coefficients.length < 2 || coefficients.length > MAX_TERMS) {
             throw new IllegalArgumentException(
-                "Number of terms must be between 2 and " + MAX_TERMS
-                + ", got " + coefficients.length);
+                    "Number of terms must be between 2 and " + MAX_TERMS
+                            + ", got " + coefficients.length);
         }
-        this.a     = coefficients.clone();
+        this.a = coefficients.clone();
         this.terms = a.length;
     }
 
+    /**
+     * Evaluates the quantile function Q(p) for a given percentile {@code p}.
+     *
+     * @param p the percentile in (0,1)
+     * @return the corresponding quantile value
+     * @throws IllegalArgumentException if {@code p} is outside (0,1)
+     */
     public double quantile(double p) {
         if (p <= 0.0 || p >= 1.0) {
             throw new IllegalArgumentException("p must be in (0,1), got " + p);
@@ -40,24 +81,40 @@ public class Metalog {
         return q;
     }
 
+    /**
+     * Evaluates the probability density function (PDF) at a given percentile
+     * {@code p}.
+     *
+     * @param p the percentile in (0,1)
+     * @return the PDF value at {@code p}
+     * @throws IllegalArgumentException if {@code p} is outside (0,1)
+     */
     public double pdf(double p) {
         if (p <= 0.0 || p >= 1.0) {
             throw new IllegalArgumentException("p must be in (0,1), got " + p);
         }
-        double[] dT  = basisDerivatives(p, terms);
-        double dMdp  = 0.0;
+        double[] dT = basisDerivatives(p, terms);
+        double dMdp = 0.0;
         for (int j = 0; j < terms; j++) {
             dMdp += a[j] * dT[j];
         }
         return 1.0 / dMdp;
     }
 
+    /**
+     * Computes the basis functions T₀…T_{terms−1} for a given {@code p}.
+     *
+     * @param p     the percentile in (0,1)
+     * @param terms the number of terms to compute
+     * @return an array of basis function values
+     * @throws IllegalArgumentException if {@code p} or {@code terms} are invalid
+     */
     public static double[] basisFunctions(double p, int terms) {
         validateInputs(p, terms);
 
-        double φ     = p - 0.5;
+        double φ = p - 0.5;
         double logit = FastMath.log(p / (1.0 - p));
-        double[] T   = new double[terms];
+        double[] T = new double[terms];
 
         // T0 = 1
         T[0] = 1.0;
@@ -67,7 +124,7 @@ public class Metalog {
             T[1] = logit;
         }
 
-        // T2 = φ * logit(p)  ← special case for first “power×logit”
+        // T2 = φ * logit(p) ← special case for first “power×logit”
         if (terms > 2) {
             T[2] = φ * logit;
         }
@@ -87,13 +144,21 @@ public class Metalog {
         return T;
     }
 
+    /**
+     * Computes the derivatives of the basis functions with respect to {@code p}.
+     *
+     * @param p     the percentile in (0,1)
+     * @param terms the number of terms to compute
+     * @return an array of basis function derivatives
+     * @throws IllegalArgumentException if {@code p} or {@code terms} are invalid
+     */
     public static double[] basisDerivatives(double p, int terms) {
         validateInputs(p, terms);
 
-        double φ     = p - 0.5;
+        double φ = p - 0.5;
         double logit = FastMath.log(p / (1.0 - p));
-        double inv   = 1.0 / (p * (1.0 - p));
-        double[] d   = new double[terms];
+        double inv = 1.0 / (p * (1.0 - p));
+        double[] d = new double[terms];
 
         // dT0/dp = 0
         d[0] = 0.0;
@@ -118,8 +183,8 @@ public class Metalog {
             } else {
                 // odd j ≥ 3
                 int power = (j - 1) / 2;
-                double φk    = FastMath.pow(φ, power);
-                double φkm1  = FastMath.pow(φ, power - 1);
+                double φk = FastMath.pow(φ, power);
+                double φkm1 = FastMath.pow(φ, power - 1);
                 // d[φ^power*logit] = power·φ^(power-1)·logit + φ^power·inv
                 d[j] = power * φkm1 * logit + φk * inv;
             }
@@ -127,14 +192,20 @@ public class Metalog {
         return d;
     }
 
+    /**
+     * Validates input parameters for percentile and term count.
+     *
+     * @param p     the percentile
+     * @param terms the number of terms
+     * @throws IllegalArgumentException if inputs are out of bounds
+     */
     public static void validateInputs(double p, int terms) {
         if (terms < 2 || terms > MAX_TERMS) {
             throw new IllegalArgumentException(
-                "terms must be in [2," + MAX_TERMS + "], got " + terms);
+                    "terms must be in [2," + MAX_TERMS + "], got " + terms);
         }
         if (p <= 0.0 || p >= 1.0) {
             throw new IllegalArgumentException("p must be in (0,1), got " + p);
         }
     }
 }
-// Test

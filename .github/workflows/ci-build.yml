@@ -21,10 +21,10 @@ jobs:
         uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: '17'
+          java-version: '21'
 
       - name: Build and run tests
-        run: mvn -B -T1C clean verify
+        run: mvn -B -T1C clean verify source:jar javadoc:jar
 
       - name: Collect artifacts
         run: |
@@ -38,6 +38,15 @@ jobs:
           # Copy artifacts with verification
           echo "Copying artifacts..."
           cp target/java-metalog-distribution-*.jar out/ || exit 1
+
+          # Ensure we copied all variants (main, sources, javadoc)
+          echo "Verifying all required artifacts..."
+          for type in "" "-sources" "-javadoc"; do
+            if [ ! -f "out/java-metalog-distribution-*${type}.jar" ]; then
+              echo "Missing required artifact: ${type}.jar"
+              exit 1
+            fi
+          done
 
           # Show what we copied
           echo "Contents of out directory:"
