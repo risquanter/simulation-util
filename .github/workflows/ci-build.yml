@@ -24,7 +24,7 @@ jobs:
           java-version: '21'
 
       - name: Build and run tests
-        run: mvn -B -T1C clean verify source:jar javadoc:jar
+        run: mvn -B -T1C clean verify
 
       - name: Collect artifacts
         run: |
