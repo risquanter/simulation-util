@@ -42,7 +42,7 @@ jobs:
           # Ensure we copied all variants (main, sources, javadoc)
           echo "Verifying all required artifacts..."
           for type in "" "-sources" "-javadoc"; do
-            if [ ! -f "out/java-metalog-distribution-*${type}.jar" ]; then
+            if ! ls out/java-metalog-distribution-*${type}.jar >/dev/null 2>&1; then
               echo "Missing required artifact: ${type}.jar"
               exit 1
             fi
