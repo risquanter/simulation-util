@@ -8,6 +8,10 @@ This project provides an implementation of the Metalog distribution in Java, inc
 - `Example` demonstrating fitting & LEC generation
 - Unit tests with JUnit 5
 
+## Contributing
+
+We welcome contributions! Please note that all contributors must sign our Contributor License Agreement (CLA) before we can accept any contributions. The CLA signing process is automated and will be initiated when you submit a pull request.
+
 ## License
 
 This program is free software: you can redistribute it and/or modify it under the terms of the GNU Affero General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
