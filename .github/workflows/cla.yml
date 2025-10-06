@@ -95,7 +95,7 @@ jobs:
           path-to-signatures: 'signatures/cla.json'
           path-to-document: 'CLA.md'
           branch: 'main'
-          allowlist: 'risquanter[bot],dependabot[bot]'
+          allowlist: 'risquanter[bot],dependabot[bot],fixbits'
           create-file-commit-message: 'Creating file for storing CLA Signatures'
           signed-commit-message: 'Signing the CLA'
           custom-notsigned-prcomment: 'Thank you for your contribution! To protect both you and the project, we need you to sign our CLA. Please read the CLA.md document and comment on this PR with: "I have read the CLA Document and I hereby sign the CLA"'
