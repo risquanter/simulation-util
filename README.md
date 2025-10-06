@@ -4,7 +4,7 @@ This project provides an implementation of the Metalog distribution in Java, inc
 
 - Basis functions for the quantile expansion
 - `Metalog` class for quantile & PDF evaluation
-- `MetalogFitter` class to fit a metalog via OLS using Apache Commons Math
+- `QPFitter` class to fit a metalog via QP using Ojalgo
 - `Example` demonstrating fitting & LEC generation
 - Unit tests with JUnit 5
 
