@@ -1,1 +1,12 @@
-{"signedContributors": []}
+{
+  "signedContributors": [
+    {
+      "name": "fixbits",
+      "id": 20474348,
+      "comment_id": 3371418331,
+      "created_at": "2025-10-06T12:34:37Z",
+      "repoId": 1043757380,
+      "pullRequestNo": 12
+    }
+  ]
+}
