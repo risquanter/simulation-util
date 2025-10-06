@@ -7,7 +7,6 @@ This project provides an implementation of the Metalog distribution in Java, inc
 - `QPFitter` class to fit a metalog via QP using the Ojalgo library
 - `Example` demonstrating fitting & LEC generation
 
-
 ## License
 
 This program is free software: you can redistribute it and/or modify it under the terms of the GNU Affero General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
