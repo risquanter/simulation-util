@@ -103,8 +103,10 @@ public class RiskHierarchyMetalogPGrid {
         // --- 4) Print full loss-exceedance curve on p-grid
         System.out.println("[");
         for (int i = 1; i <= GRID_STEPS; i++) {
-            double p = i/(double)GRID_STEPS;
-            int idx = (int)Math.floor(p * sims);
+            double cdf_p = i/(double)GRID_STEPS;  // 0.01 to 1.00
+            double exceedance_p = 1.0 - cdf_p;   // 0.99 to 0.00
+
+            int idx = (int)Math.floor(cdf_p * sims);
             if (idx >= sims) idx = sims-1;
 
             double qAB  = ab[idx];
@@ -112,8 +114,8 @@ public class RiskHierarchyMetalogPGrid {
             String comma = (i < GRID_STEPS ? "," : "");
 
             System.out.printf(
-              "  {\"p\": %.3f, \"AB\": %.4f, \"ABC\": %.4f}%n",
-               p, qAB, qABC, comma
+                "  {\"exceedance_p\": %.3f, \"AB\": %.4f, \"ABC\": %.4f}%s%n",
+                exceedance_p, qAB, qABC, comma
             );
         }
         System.out.println("]");

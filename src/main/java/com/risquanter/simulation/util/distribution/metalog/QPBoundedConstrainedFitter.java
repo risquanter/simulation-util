@@ -12,16 +12,16 @@ import org.ojalgo.optimisation.Variable;
  * We represent the quantile function Q(p) as a linear combination of n basis
  * functions T_j(p):
  *
- *     Q(p) = Σ_{j=0..n-1} a_j · T_j(p)
+ * Q(p) = Σ_{j=0..n-1} a_j · T_j(p)
  *
  * where the T_j are the “metalog” basis polynomials in the probability p.
  * Common choices (n≥3) include
- *   T₀(p) = 1
- *   T₁(p) = logit(p)           = ln(p/(1−p))
- *   T₂(p) = p − 0.5
- *   T₃(p) = (p − 0.5)·logit(p)
- *   T₄(p) = logit(p)² − π²/3
- *   …and higher-order combinations for added flexibility.
+ * T₀(p) = 1
+ * T₁(p) = logit(p) = ln(p/(1−p))
+ * T₂(p) = p − 0.5
+ * T₃(p) = (p − 0.5)·logit(p)
+ * T₄(p) = logit(p)² − π²/3
+ * …and higher-order combinations for added flexibility.
  *
  *
  * Monotonicity Constraint (dQ/dp ≥ ε)
@@ -29,19 +29,19 @@ import org.ojalgo.optimisation.Variable;
  * We enforce that Q(p) be strictly increasing by requiring its derivative
  * on a grid of G points pₖ satisfy:
  *
- *     dQ/dp (pₖ) = Σ_j a_j · Tʹ_j(pₖ)  ≥ ε
+ * dQ/dp (pₖ) = Σ_j a_j · Tʹ_j(pₖ) ≥ ε
  *
  * where ε>0 is a tiny regularization constant (e.g. 1e−6). This turns the
  * monotonicity condition into G linear constraints in the QP:
  *
- *     D[k]·a ≥ ε,   D[k,j] = Tʹ_j(pₖ)
+ * D[k]·a ≥ ε, D[k,j] = Tʹ_j(pₖ)
  *
  *
  * Lower Bound Constraint (optional)
  * ---------------------------------
  * If a lower bound L is supplied, we add for each grid point pₖ:
  *
- *     Q(pₖ) = Σ_j a_j · T_j(pₖ)  ≥ L
+ * Q(pₖ) = Σ_j a_j · T_j(pₖ) ≥ L
  *
  * guaranteeing the fitted quantile never falls below L on [0,1].
  *
@@ -50,7 +50,7 @@ import org.ojalgo.optimisation.Variable;
  * ---------------------------------
  * If an upper bound U is supplied, we similarly add:
  *
- *     Q(pₖ) = Σ_j a_j · T_j(pₖ)  ≤ U
+ * Q(pₖ) = Σ_j a_j · T_j(pₖ) ≤ U
  *
  * guaranteeing the fitted quantile never exceeds U on [0,1].
  *
@@ -59,23 +59,23 @@ import org.ojalgo.optimisation.Variable;
  * -----------------------
  * The QP we solve is:
  *
- *   minimize    ½‖Y·a − xData‖²      (least-squares fit at data points)
- *   subject to  D·a  ≥ ε             (monotonicity)
- *               T·a  ≥ L  (if L≠null) (lower bound)
- *               T·a  ≤ U  (if U≠null) (upper bound)
+ * minimize ½‖Y·a − xData‖² (least-squares fit at data points)
+ * subject to D·a ≥ ε (monotonicity)
+ * T·a ≥ L (if L≠null) (lower bound)
+ * T·a ≤ U (if U≠null) (upper bound)
  *
  * where:
- *   • Y[i,j] = T_j(pData[i])         (basis at your observed quantiles)
- *   • D[k,j] = Tʹ_j(gridP[k])        (derivatives on the enforce grid)
- *   • T[k,j] = T_j(gridP[k])         (basis on the enforce grid)
+ * • Y[i,j] = T_j(pData[i]) (basis at your observed quantiles)
+ * • D[k,j] = Tʹ_j(gridP[k]) (derivatives on the enforce grid)
+ * • T[k,j] = T_j(gridP[k]) (basis on the enforce grid)
  */
 class QPBoundedConstrainedFitter {
 
-    private final double[] pData;    // length K
-    private final double[] xData;    // length K
-    private final int    terms;      // n = # of metalog terms
-    private final double epsilon;    // monotonicity floor
-    private final double[] gridP;    // length G
+    private final double[] pData; // length K
+    private final double[] xData; // length K
+    private final int terms; // n = # of metalog terms
+    private final double epsilon; // monotonicity floor
+    private final double[] gridP; // length G
     private final Double lowerBound; // optional
     private final Double upperBound; // optional
 
@@ -91,13 +91,14 @@ class QPBoundedConstrainedFitter {
         if (pData.length != xData.length) {
             throw new IllegalArgumentException("pData and xData must have same length");
         }
-        Metalog.validateInputs(0.5, terms);
+        Metalog.validateInputs(terms);
+        Metalog.validateInputs(gridP);
 
-        this.pData     = pData.clone();
-        this.xData     = xData.clone();
-        this.terms     = terms;
-        this.epsilon   = epsilon;
-        this.gridP     = gridP.clone();
+        this.pData = pData.clone();
+        this.xData = xData.clone();
+        this.terms = terms;
+        this.epsilon = epsilon;
+        this.gridP = gridP.clone();
         this.lowerBound = lowerBound;
         this.upperBound = upperBound;
     }
@@ -117,11 +118,11 @@ class QPBoundedConstrainedFitter {
 
         // 2) Build Q and c for ½ aᵀQa + cᵀa
         double[][] Q = new double[n][n];
-        double[]   c = new double[n];
+        double[] c = new double[n];
         for (int i = 0; i < K; i++) {
             for (int j = 0; j < n; j++) {
                 double yij = Y[i][j];
-                c[j]    -= yij * xData[i];
+                c[j] -= yij * xData[i];
                 for (int k = 0; k < n; k++) {
                     Q[j][k] += yij * Y[i][k];
                 }

@@ -110,7 +110,8 @@ public class Metalog {
      * @throws IllegalArgumentException if {@code p} or {@code terms} are invalid
      */
     public static double[] basisFunctions(double p, int terms) {
-        validateInputs(p, terms);
+        validateInputs(terms);
+        validateInputs(p);
 
         double φ = p - 0.5;
         double logit = FastMath.log(p / (1.0 - p));
@@ -153,7 +154,8 @@ public class Metalog {
      * @throws IllegalArgumentException if {@code p} or {@code terms} are invalid
      */
     public static double[] basisDerivatives(double p, int terms) {
-        validateInputs(p, terms);
+        validateInputs(terms);
+        validateInputs(p);
 
         double φ = p - 0.5;
         double logit = FastMath.log(p / (1.0 - p));
@@ -193,19 +195,34 @@ public class Metalog {
     }
 
     /**
-     * Validates input parameters for percentile and term count.
+     * Validates input parameters for percentile / probabilities.
      *
-     * @param p     the percentile
-     * @param terms the number of terms
-     * @throws IllegalArgumentException if inputs are out of bounds
+     * @param p the percentile
+     * @throws IllegalArgumentException if percentile or probability inputs are out
+     *                                  of bounds
      */
-    public static void validateInputs(double p, int terms) {
+    public static void validateInputs(double p) {
+        if (p <= 0.0 || p >= 1.0) {
+            throw new IllegalArgumentException("p must be in (0,1), got " + p);
+        }
+    }
+
+    /**
+     * Validates term count.
+     *
+     * @param terms the number of terms
+     * @throws IllegalArgumentException if term count is out of bounds
+     */
+    public static void validateInputs(int terms) {
         if (terms < 2 || terms > MAX_TERMS) {
             throw new IllegalArgumentException(
                     "terms must be in [2," + MAX_TERMS + "], got " + terms);
         }
-        if (p <= 0.0 || p >= 1.0) {
-            throw new IllegalArgumentException("p must be in (0,1), got " + p);
+    }
+
+    public static void validateInputs(double[] p) {
+        for (double v : p) {
+            validateInputs(v);
         }
     }
 }

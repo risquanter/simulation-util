@@ -1,450 +1,128 @@
-{
+﻿{
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
   "title": "CDF of expert opinion data Metalog (4-term fit), with original expert estimates highlighted.",
   "layer": [
     {
       "data": {
         "values": [
-          {
-            "x": 16.000
-          },
-          {
-            "x": 40.000
-          }
-        ]
+  {"x": 16.000},
+  {"x": 40.000}
+]
       },
       "mark": {
         "type": "rule",
         "stroke": "midnightblue",
-        "strokeDash": [
-          4,
-          4
-        ],
+        "strokeDash": [4, 4],
         "strokeWidth": 1
       },
       "encoding": {
-        "x": {
-          "field": "x",
-          "type": "quantitative",
-          "scale": {
-            "domain": [
-              -5,
-              60
-            ],
-            "clamp": true
-          }
-        }
+        "x": { "field": "x", "type": "quantitative", "scale": { "domain": [-5, 60], "clamp": true }  }
       }
     },
     {
-      "data": {
-        "values": [
-          {
-            "p": 0.000,
-            "quantile": -57.7402
-          },
-          {
-            "p": 0.010,
-            "quantile": 10.3018
-          },
-          {
-            "p": 0.020,
-            "quantile": 12.3098
-          },
-          {
-            "p": 0.030,
-            "quantile": 13.4794
-          },
-          {
-            "p": 0.040,
-            "quantile": 14.3092
-          },
-          {
-            "p": 0.050,
-            "quantile": 14.9545
-          },
-          {
-            "p": 0.060,
-            "quantile": 15.4845
-          },
-          {
-            "p": 0.070,
-            "quantile": 15.9358
-          },
-          {
-            "p": 0.080,
-            "quantile": 16.3302
-          },
-          {
-            "p": 0.090,
-            "quantile": 16.6818
-          },
-          {
-            "p": 0.100,
-            "quantile": 17.0000
-          },
-          {
-            "p": 0.110,
-            "quantile": 17.2917
-          },
-          {
-            "p": 0.120,
-            "quantile": 17.5618
-          },
-          {
-            "p": 0.130,
-            "quantile": 17.8141
-          },
-          {
-            "p": 0.140,
-            "quantile": 18.0515
-          },
-          {
-            "p": 0.150,
-            "quantile": 18.2765
-          },
-          {
-            "p": 0.160,
-            "quantile": 18.4907
-          },
-          {
-            "p": 0.170,
-            "quantile": 18.6959
-          },
-          {
-            "p": 0.180,
-            "quantile": 18.8931
-          },
-          {
-            "p": 0.190,
-            "quantile": 19.0835
-          },
-          {
-            "p": 0.200,
-            "quantile": 19.2680
-          },
-          {
-            "p": 0.210,
-            "quantile": 19.4474
-          },
-          {
-            "p": 0.220,
-            "quantile": 19.6222
-          },
-          {
-            "p": 0.230,
-            "quantile": 19.7931
-          },
-          {
-            "p": 0.240,
-            "quantile": 19.9605
-          },
-          {
-            "p": 0.250,
-            "quantile": 20.1250
-          },
-          {
-            "p": 0.260,
-            "quantile": 20.2869
-          },
-          {
-            "p": 0.270,
-            "quantile": 20.4465
-          },
-          {
-            "p": 0.280,
-            "quantile": 20.6042
-          },
-          {
-            "p": 0.290,
-            "quantile": 20.7603
-          },
-          {
-            "p": 0.300,
-            "quantile": 20.9150
-          },
-          {
-            "p": 0.310,
-            "quantile": 21.0686
-          },
-          {
-            "p": 0.320,
-            "quantile": 21.2212
-          },
-          {
-            "p": 0.330,
-            "quantile": 21.3732
-          },
-          {
-            "p": 0.340,
-            "quantile": 21.5246
-          },
-          {
-            "p": 0.350,
-            "quantile": 21.6757
-          },
-          {
-            "p": 0.360,
-            "quantile": 21.8266
-          },
-          {
-            "p": 0.370,
-            "quantile": 21.9774
-          },
-          {
-            "p": 0.380,
-            "quantile": 22.1285
-          },
-          {
-            "p": 0.390,
-            "quantile": 22.2797
-          },
-          {
-            "p": 0.400,
-            "quantile": 22.4315
-          },
-          {
-            "p": 0.410,
-            "quantile": 22.5837
-          },
-          {
-            "p": 0.420,
-            "quantile": 22.7367
-          },
-          {
-            "p": 0.430,
-            "quantile": 22.8904
-          },
-          {
-            "p": 0.440,
-            "quantile": 23.0451
-          },
-          {
-            "p": 0.450,
-            "quantile": 23.2009
-          },
-          {
-            "p": 0.460,
-            "quantile": 23.3578
-          },
-          {
-            "p": 0.470,
-            "quantile": 23.5161
-          },
-          {
-            "p": 0.480,
-            "quantile": 23.6758
-          },
-          {
-            "p": 0.490,
-            "quantile": 23.8370
-          },
-          {
-            "p": 0.500,
-            "quantile": 24.0000
-          },
-          {
-            "p": 0.510,
-            "quantile": 24.1648
-          },
-          {
-            "p": 0.520,
-            "quantile": 24.3315
-          },
-          {
-            "p": 0.530,
-            "quantile": 24.5003
-          },
-          {
-            "p": 0.540,
-            "quantile": 24.6714
-          },
-          {
-            "p": 0.550,
-            "quantile": 24.8448
-          },
-          {
-            "p": 0.560,
-            "quantile": 25.0207
-          },
-          {
-            "p": 0.570,
-            "quantile": 25.1994
-          },
-          {
-            "p": 0.580,
-            "quantile": 25.3809
-          },
-          {
-            "p": 0.590,
-            "quantile": 25.5654
-          },
-          {
-            "p": 0.600,
-            "quantile": 25.7531
-          },
-          {
-            "p": 0.610,
-            "quantile": 25.9442
-          },
-          {
-            "p": 0.620,
-            "quantile": 26.1389
-          },
-          {
-            "p": 0.630,
-            "quantile": 26.3374
-          },
-          {
-            "p": 0.640,
-            "quantile": 26.5400
-          },
-          {
-            "p": 0.650,
-            "quantile": 26.7469
-          },
-          {
-            "p": 0.660,
-            "quantile": 26.9584
-          },
-          {
-            "p": 0.670,
-            "quantile": 27.1747
-          },
-          {
-            "p": 0.680,
-            "quantile": 27.3963
-          },
-          {
-            "p": 0.690,
-            "quantile": 27.6233
-          },
-          {
-            "p": 0.700,
-            "quantile": 27.8562
-          },
-          {
-            "p": 0.710,
-            "quantile": 28.0954
-          },
-          {
-            "p": 0.720,
-            "quantile": 28.3414
-          },
-          {
-            "p": 0.730,
-            "quantile": 28.5946
-          },
-          {
-            "p": 0.740,
-            "quantile": 28.8556
-          },
-          {
-            "p": 0.750,
-            "quantile": 29.1250
-          },
-          {
-            "p": 0.760,
-            "quantile": 29.4035
-          },
-          {
-            "p": 0.770,
-            "quantile": 29.6917
-          },
-          {
-            "p": 0.780,
-            "quantile": 29.9907
-          },
-          {
-            "p": 0.790,
-            "quantile": 30.3013
-          },
-          {
-            "p": 0.800,
-            "quantile": 30.6248
-          },
-          {
-            "p": 0.810,
-            "quantile": 30.9622
-          },
-          {
-            "p": 0.820,
-            "quantile": 31.3153
-          },
-          {
-            "p": 0.830,
-            "quantile": 31.6856
-          },
-          {
-            "p": 0.840,
-            "quantile": 32.0752
-          },
-          {
-            "p": 0.850,
-            "quantile": 32.4866
-          },
-          {
-            "p": 0.860,
-            "quantile": 32.9227
-          },
-          {
-            "p": 0.870,
-            "quantile": 33.3870
-          },
-          {
-            "p": 0.880,
-            "quantile": 33.8841
-          },
-          {
-            "p": 0.890,
-            "quantile": 34.4193
-          },
-          {
-            "p": 0.900,
-            "quantile": 35.0000
-          },
-          {
-            "p": 0.910,
-            "quantile": 35.6354
-          },
-          {
-            "p": 0.920,
-            "quantile": 36.3383
-          },
-          {
-            "p": 0.930,
-            "quantile": 37.1264
-          },
-          {
-            "p": 0.940,
-            "quantile": 38.0255
-          },
-          {
-            "p": 0.950,
-            "quantile": 39.0758
-          },
-          {
-            "p": 0.960,
-            "quantile": 40.3443
-          },
-          {
-            "p": 0.970,
-            "quantile": 41.9562
-          },
-          {
-            "p": 0.980,
-            "quantile": 44.1922
-          },
-          {
-            "p": 0.990,
-            "quantile": 47.9457
-          },
-          {
-            "p": 1.000,
-            "quantile": 168.6174
-          }
-        ]
-      },
+      "data": { "values": [
+  {"p": 0.000, "quantile": -57.7402},
+  {"p": 0.010, "quantile": 10.3018},
+  {"p": 0.020, "quantile": 12.3098},
+  {"p": 0.030, "quantile": 13.4794},
+  {"p": 0.040, "quantile": 14.3092},
+  {"p": 0.050, "quantile": 14.9545},
+  {"p": 0.060, "quantile": 15.4845},
+  {"p": 0.070, "quantile": 15.9358},
+  {"p": 0.080, "quantile": 16.3302},
+  {"p": 0.090, "quantile": 16.6818},
+  {"p": 0.100, "quantile": 17.0000},
+  {"p": 0.110, "quantile": 17.2917},
+  {"p": 0.120, "quantile": 17.5618},
+  {"p": 0.130, "quantile": 17.8141},
+  {"p": 0.140, "quantile": 18.0515},
+  {"p": 0.150, "quantile": 18.2765},
+  {"p": 0.160, "quantile": 18.4907},
+  {"p": 0.170, "quantile": 18.6959},
+  {"p": 0.180, "quantile": 18.8931},
+  {"p": 0.190, "quantile": 19.0835},
+  {"p": 0.200, "quantile": 19.2680},
+  {"p": 0.210, "quantile": 19.4474},
+  {"p": 0.220, "quantile": 19.6222},
+  {"p": 0.230, "quantile": 19.7931},
+  {"p": 0.240, "quantile": 19.9605},
+  {"p": 0.250, "quantile": 20.1250},
+  {"p": 0.260, "quantile": 20.2869},
+  {"p": 0.270, "quantile": 20.4465},
+  {"p": 0.280, "quantile": 20.6042},
+  {"p": 0.290, "quantile": 20.7603},
+  {"p": 0.300, "quantile": 20.9150},
+  {"p": 0.310, "quantile": 21.0686},
+  {"p": 0.320, "quantile": 21.2212},
+  {"p": 0.330, "quantile": 21.3732},
+  {"p": 0.340, "quantile": 21.5246},
+  {"p": 0.350, "quantile": 21.6757},
+  {"p": 0.360, "quantile": 21.8266},
+  {"p": 0.370, "quantile": 21.9774},
+  {"p": 0.380, "quantile": 22.1285},
+  {"p": 0.390, "quantile": 22.2797},
+  {"p": 0.400, "quantile": 22.4315},
+  {"p": 0.410, "quantile": 22.5837},
+  {"p": 0.420, "quantile": 22.7367},
+  {"p": 0.430, "quantile": 22.8904},
+  {"p": 0.440, "quantile": 23.0451},
+  {"p": 0.450, "quantile": 23.2009},
+  {"p": 0.460, "quantile": 23.3578},
+  {"p": 0.470, "quantile": 23.5161},
+  {"p": 0.480, "quantile": 23.6758},
+  {"p": 0.490, "quantile": 23.8370},
+  {"p": 0.500, "quantile": 24.0000},
+  {"p": 0.510, "quantile": 24.1648},
+  {"p": 0.520, "quantile": 24.3315},
+  {"p": 0.530, "quantile": 24.5003},
+  {"p": 0.540, "quantile": 24.6714},
+  {"p": 0.550, "quantile": 24.8448},
+  {"p": 0.560, "quantile": 25.0207},
+  {"p": 0.570, "quantile": 25.1994},
+  {"p": 0.580, "quantile": 25.3809},
+  {"p": 0.590, "quantile": 25.5654},
+  {"p": 0.600, "quantile": 25.7531},
+  {"p": 0.610, "quantile": 25.9442},
+  {"p": 0.620, "quantile": 26.1389},
+  {"p": 0.630, "quantile": 26.3374},
+  {"p": 0.640, "quantile": 26.5400},
+  {"p": 0.650, "quantile": 26.7469},
+  {"p": 0.660, "quantile": 26.9584},
+  {"p": 0.670, "quantile": 27.1747},
+  {"p": 0.680, "quantile": 27.3963},
+  {"p": 0.690, "quantile": 27.6233},
+  {"p": 0.700, "quantile": 27.8562},
+  {"p": 0.710, "quantile": 28.0954},
+  {"p": 0.720, "quantile": 28.3414},
+  {"p": 0.730, "quantile": 28.5946},
+  {"p": 0.740, "quantile": 28.8556},
+  {"p": 0.750, "quantile": 29.1250},
+  {"p": 0.760, "quantile": 29.4035},
+  {"p": 0.770, "quantile": 29.6917},
+  {"p": 0.780, "quantile": 29.9907},
+  {"p": 0.790, "quantile": 30.3013},
+  {"p": 0.800, "quantile": 30.6248},
+  {"p": 0.810, "quantile": 30.9622},
+  {"p": 0.820, "quantile": 31.3153},
+  {"p": 0.830, "quantile": 31.6856},
+  {"p": 0.840, "quantile": 32.0752},
+  {"p": 0.850, "quantile": 32.4866},
+  {"p": 0.860, "quantile": 32.9227},
+  {"p": 0.870, "quantile": 33.3870},
+  {"p": 0.880, "quantile": 33.8841},
+  {"p": 0.890, "quantile": 34.4193},
+  {"p": 0.900, "quantile": 35.0000},
+  {"p": 0.910, "quantile": 35.6354},
+  {"p": 0.920, "quantile": 36.3383},
+  {"p": 0.930, "quantile": 37.1264},
+  {"p": 0.940, "quantile": 38.0255},
+  {"p": 0.950, "quantile": 39.0758},
+  {"p": 0.960, "quantile": 40.3443},
+  {"p": 0.970, "quantile": 41.9562},
+  {"p": 0.980, "quantile": 44.1922},
+  {"p": 0.990, "quantile": 47.9457},
+  {"p": 1.000, "quantile": 168.6174}
+] },
       "mark": {
         "type": "line",
         "color": "firebrick",
@@ -464,447 +142,125 @@
       }
     },
     {
-      "data": {
-        "values": [
-          {
-            "p": 0.000,
-            "quantile": 16.0000
-          },
-          {
-            "p": 0.010,
-            "quantile": 16.0657
-          },
-          {
-            "p": 0.020,
-            "quantile": 16.1465
-          },
-          {
-            "p": 0.030,
-            "quantile": 16.2355
-          },
-          {
-            "p": 0.040,
-            "quantile": 16.3307
-          },
-          {
-            "p": 0.050,
-            "quantile": 16.4313
-          },
-          {
-            "p": 0.060,
-            "quantile": 16.5368
-          },
-          {
-            "p": 0.070,
-            "quantile": 16.6466
-          },
-          {
-            "p": 0.080,
-            "quantile": 16.7606
-          },
-          {
-            "p": 0.090,
-            "quantile": 16.8785
-          },
-          {
-            "p": 0.100,
-            "quantile": 17.0000
-          },
-          {
-            "p": 0.110,
-            "quantile": 17.1251
-          },
-          {
-            "p": 0.120,
-            "quantile": 17.2535
-          },
-          {
-            "p": 0.130,
-            "quantile": 17.3852
-          },
-          {
-            "p": 0.140,
-            "quantile": 17.5201
-          },
-          {
-            "p": 0.150,
-            "quantile": 17.6581
-          },
-          {
-            "p": 0.160,
-            "quantile": 17.7990
-          },
-          {
-            "p": 0.170,
-            "quantile": 17.9428
-          },
-          {
-            "p": 0.180,
-            "quantile": 18.0894
-          },
-          {
-            "p": 0.190,
-            "quantile": 18.2388
-          },
-          {
-            "p": 0.200,
-            "quantile": 18.3909
-          },
-          {
-            "p": 0.210,
-            "quantile": 18.5457
-          },
-          {
-            "p": 0.220,
-            "quantile": 18.7030
-          },
-          {
-            "p": 0.230,
-            "quantile": 18.8628
-          },
-          {
-            "p": 0.240,
-            "quantile": 19.0251
-          },
-          {
-            "p": 0.250,
-            "quantile": 19.1898
-          },
-          {
-            "p": 0.260,
-            "quantile": 19.3569
-          },
-          {
-            "p": 0.270,
-            "quantile": 19.5263
-          },
-          {
-            "p": 0.280,
-            "quantile": 19.6980
-          },
-          {
-            "p": 0.290,
-            "quantile": 19.8720
-          },
-          {
-            "p": 0.300,
-            "quantile": 20.0482
-          },
-          {
-            "p": 0.310,
-            "quantile": 20.2266
-          },
-          {
-            "p": 0.320,
-            "quantile": 20.4072
-          },
-          {
-            "p": 0.330,
-            "quantile": 20.5898
-          },
-          {
-            "p": 0.340,
-            "quantile": 20.7746
-          },
-          {
-            "p": 0.350,
-            "quantile": 20.9614
-          },
-          {
-            "p": 0.360,
-            "quantile": 21.1503
-          },
-          {
-            "p": 0.370,
-            "quantile": 21.3412
-          },
-          {
-            "p": 0.380,
-            "quantile": 21.5340
-          },
-          {
-            "p": 0.390,
-            "quantile": 21.7289
-          },
-          {
-            "p": 0.400,
-            "quantile": 21.9257
-          },
-          {
-            "p": 0.410,
-            "quantile": 22.1245
-          },
-          {
-            "p": 0.420,
-            "quantile": 22.3252
-          },
-          {
-            "p": 0.430,
-            "quantile": 22.5279
-          },
-          {
-            "p": 0.440,
-            "quantile": 22.7324
-          },
-          {
-            "p": 0.450,
-            "quantile": 22.9389
-          },
-          {
-            "p": 0.460,
-            "quantile": 23.1473
-          },
-          {
-            "p": 0.470,
-            "quantile": 23.3576
-          },
-          {
-            "p": 0.480,
-            "quantile": 23.5698
-          },
-          {
-            "p": 0.490,
-            "quantile": 23.7839
-          },
-          {
-            "p": 0.500,
-            "quantile": 24.0000
-          },
-          {
-            "p": 0.510,
-            "quantile": 24.2180
-          },
-          {
-            "p": 0.520,
-            "quantile": 24.4379
-          },
-          {
-            "p": 0.530,
-            "quantile": 24.6599
-          },
-          {
-            "p": 0.540,
-            "quantile": 24.8838
-          },
-          {
-            "p": 0.550,
-            "quantile": 25.1097
-          },
-          {
-            "p": 0.560,
-            "quantile": 25.3377
-          },
-          {
-            "p": 0.570,
-            "quantile": 25.5677
-          },
-          {
-            "p": 0.580,
-            "quantile": 25.7999
-          },
-          {
-            "p": 0.590,
-            "quantile": 26.0343
-          },
-          {
-            "p": 0.600,
-            "quantile": 26.2708
-          },
-          {
-            "p": 0.610,
-            "quantile": 26.5096
-          },
-          {
-            "p": 0.620,
-            "quantile": 26.7507
-          },
-          {
-            "p": 0.630,
-            "quantile": 26.9942
-          },
-          {
-            "p": 0.640,
-            "quantile": 27.2402
-          },
-          {
-            "p": 0.650,
-            "quantile": 27.4887
-          },
-          {
-            "p": 0.660,
-            "quantile": 27.7397
-          },
-          {
-            "p": 0.670,
-            "quantile": 27.9935
-          },
-          {
-            "p": 0.680,
-            "quantile": 28.2501
-          },
-          {
-            "p": 0.690,
-            "quantile": 28.5097
-          },
-          {
-            "p": 0.700,
-            "quantile": 28.7722
-          },
-          {
-            "p": 0.710,
-            "quantile": 29.0379
-          },
-          {
-            "p": 0.720,
-            "quantile": 29.3070
-          },
-          {
-            "p": 0.730,
-            "quantile": 29.5795
-          },
-          {
-            "p": 0.740,
-            "quantile": 29.8556
-          },
-          {
-            "p": 0.750,
-            "quantile": 30.1356
-          },
-          {
-            "p": 0.760,
-            "quantile": 30.4195
-          },
-          {
-            "p": 0.770,
-            "quantile": 30.7078
-          },
-          {
-            "p": 0.780,
-            "quantile": 31.0005
-          },
-          {
-            "p": 0.790,
-            "quantile": 31.2980
-          },
-          {
-            "p": 0.800,
-            "quantile": 31.6005
-          },
-          {
-            "p": 0.810,
-            "quantile": 31.9085
-          },
-          {
-            "p": 0.820,
-            "quantile": 32.2222
-          },
-          {
-            "p": 0.830,
-            "quantile": 32.5420
-          },
-          {
-            "p": 0.840,
-            "quantile": 32.8685
-          },
-          {
-            "p": 0.850,
-            "quantile": 33.2021
-          },
-          {
-            "p": 0.860,
-            "quantile": 33.5434
-          },
-          {
-            "p": 0.870,
-            "quantile": 33.8930
-          },
-          {
-            "p": 0.880,
-            "quantile": 34.2517
-          },
-          {
-            "p": 0.890,
-            "quantile": 34.6204
-          },
-          {
-            "p": 0.900,
-            "quantile": 35.0000
-          },
-          {
-            "p": 0.910,
-            "quantile": 35.3918
-          },
-          {
-            "p": 0.920,
-            "quantile": 35.7971
-          },
-          {
-            "p": 0.930,
-            "quantile": 36.2177
-          },
-          {
-            "p": 0.940,
-            "quantile": 36.6557
-          },
-          {
-            "p": 0.950,
-            "quantile": 37.1139
-          },
-          {
-            "p": 0.960,
-            "quantile": 37.5961
-          },
-          {
-            "p": 0.970,
-            "quantile": 38.1077
-          },
-          {
-            "p": 0.980,
-            "quantile": 38.6573
-          },
-          {
-            "p": 0.990,
-            "quantile": 39.2622
-          },
-          {
-            "p": 1.000,
-            "quantile": 40.0000
-          }
-        ]
-      },
+      "data": { "values": [
+  {"p": 0.000, "quantile": 16.0000},
+  {"p": 0.010, "quantile": 16.0657},
+  {"p": 0.020, "quantile": 16.1465},
+  {"p": 0.030, "quantile": 16.2355},
+  {"p": 0.040, "quantile": 16.3307},
+  {"p": 0.050, "quantile": 16.4313},
+  {"p": 0.060, "quantile": 16.5368},
+  {"p": 0.070, "quantile": 16.6466},
+  {"p": 0.080, "quantile": 16.7606},
+  {"p": 0.090, "quantile": 16.8785},
+  {"p": 0.100, "quantile": 17.0000},
+  {"p": 0.110, "quantile": 17.1251},
+  {"p": 0.120, "quantile": 17.2535},
+  {"p": 0.130, "quantile": 17.3852},
+  {"p": 0.140, "quantile": 17.5201},
+  {"p": 0.150, "quantile": 17.6581},
+  {"p": 0.160, "quantile": 17.7990},
+  {"p": 0.170, "quantile": 17.9428},
+  {"p": 0.180, "quantile": 18.0894},
+  {"p": 0.190, "quantile": 18.2388},
+  {"p": 0.200, "quantile": 18.3909},
+  {"p": 0.210, "quantile": 18.5457},
+  {"p": 0.220, "quantile": 18.7030},
+  {"p": 0.230, "quantile": 18.8628},
+  {"p": 0.240, "quantile": 19.0251},
+  {"p": 0.250, "quantile": 19.1898},
+  {"p": 0.260, "quantile": 19.3569},
+  {"p": 0.270, "quantile": 19.5263},
+  {"p": 0.280, "quantile": 19.6980},
+  {"p": 0.290, "quantile": 19.8720},
+  {"p": 0.300, "quantile": 20.0482},
+  {"p": 0.310, "quantile": 20.2266},
+  {"p": 0.320, "quantile": 20.4072},
+  {"p": 0.330, "quantile": 20.5898},
+  {"p": 0.340, "quantile": 20.7746},
+  {"p": 0.350, "quantile": 20.9614},
+  {"p": 0.360, "quantile": 21.1503},
+  {"p": 0.370, "quantile": 21.3412},
+  {"p": 0.380, "quantile": 21.5340},
+  {"p": 0.390, "quantile": 21.7289},
+  {"p": 0.400, "quantile": 21.9257},
+  {"p": 0.410, "quantile": 22.1245},
+  {"p": 0.420, "quantile": 22.3252},
+  {"p": 0.430, "quantile": 22.5279},
+  {"p": 0.440, "quantile": 22.7324},
+  {"p": 0.450, "quantile": 22.9389},
+  {"p": 0.460, "quantile": 23.1473},
+  {"p": 0.470, "quantile": 23.3576},
+  {"p": 0.480, "quantile": 23.5698},
+  {"p": 0.490, "quantile": 23.7839},
+  {"p": 0.500, "quantile": 24.0000},
+  {"p": 0.510, "quantile": 24.2180},
+  {"p": 0.520, "quantile": 24.4379},
+  {"p": 0.530, "quantile": 24.6599},
+  {"p": 0.540, "quantile": 24.8838},
+  {"p": 0.550, "quantile": 25.1097},
+  {"p": 0.560, "quantile": 25.3377},
+  {"p": 0.570, "quantile": 25.5677},
+  {"p": 0.580, "quantile": 25.7999},
+  {"p": 0.590, "quantile": 26.0343},
+  {"p": 0.600, "quantile": 26.2708},
+  {"p": 0.610, "quantile": 26.5096},
+  {"p": 0.620, "quantile": 26.7507},
+  {"p": 0.630, "quantile": 26.9942},
+  {"p": 0.640, "quantile": 27.2402},
+  {"p": 0.650, "quantile": 27.4887},
+  {"p": 0.660, "quantile": 27.7397},
+  {"p": 0.670, "quantile": 27.9935},
+  {"p": 0.680, "quantile": 28.2501},
+  {"p": 0.690, "quantile": 28.5097},
+  {"p": 0.700, "quantile": 28.7722},
+  {"p": 0.710, "quantile": 29.0379},
+  {"p": 0.720, "quantile": 29.3070},
+  {"p": 0.730, "quantile": 29.5795},
+  {"p": 0.740, "quantile": 29.8556},
+  {"p": 0.750, "quantile": 30.1356},
+  {"p": 0.760, "quantile": 30.4195},
+  {"p": 0.770, "quantile": 30.7078},
+  {"p": 0.780, "quantile": 31.0005},
+  {"p": 0.790, "quantile": 31.2980},
+  {"p": 0.800, "quantile": 31.6005},
+  {"p": 0.810, "quantile": 31.9085},
+  {"p": 0.820, "quantile": 32.2222},
+  {"p": 0.830, "quantile": 32.5420},
+  {"p": 0.840, "quantile": 32.8685},
+  {"p": 0.850, "quantile": 33.2021},
+  {"p": 0.860, "quantile": 33.5434},
+  {"p": 0.870, "quantile": 33.8930},
+  {"p": 0.880, "quantile": 34.2517},
+  {"p": 0.890, "quantile": 34.6204},
+  {"p": 0.900, "quantile": 35.0000},
+  {"p": 0.910, "quantile": 35.3918},
+  {"p": 0.920, "quantile": 35.7971},
+  {"p": 0.930, "quantile": 36.2177},
+  {"p": 0.940, "quantile": 36.6557},
+  {"p": 0.950, "quantile": 37.1139},
+  {"p": 0.960, "quantile": 37.5961},
+  {"p": 0.970, "quantile": 38.1077},
+  {"p": 0.980, "quantile": 38.6573},
+  {"p": 0.990, "quantile": 39.2622},
+  {"p": 1.000, "quantile": 40.0000}
+] },
       "mark": {
         "type": "line",
         "color": "steelblue",
         "strokeWidth": 2
       },
       "encoding": {
-        "x": {
-          "field": "quantile",
-          "type": "quantitative"
-        },
-        "y": {
-          "field": "p",
-          "type": "quantitative"
-        }
+        "x": { "field": "quantile", "type": "quantitative" },
+        "y": { "field": "p",        "type": "quantitative" }
       }
     },
     {
-      "data": {
-        "values": [
-          {
-            "quantile": 17.0,
-            "p": 0.100
-          },
-          {
-            "quantile": 24.0,
-            "p": 0.500
-          },
-          {
-            "quantile": 35.0,
-            "p": 0.900
-          }
-        ]
-      },
+      "data": { "values": [
+  {"quantile": 17.0, "p": 0.100},
+  {"quantile": 24.0, "p": 0.500},
+  {"quantile": 35.0, "p": 0.900}
+] },
       "mark": {
         "type": "point",
         "shape": "circle",
@@ -913,57 +269,23 @@
         "size": 100
       },
       "encoding": {
-        "x": {
-          "field": "quantile",
-          "type": "quantitative"
-        },
-        "y": {
-          "field": "p",
-          "type": "quantitative"
-        }
+        "x": { "field": "quantile", "type": "quantitative" },
+        "y": { "field": "p",        "type": "quantitative" }
       }
     },
     {
       "data": {
         "values": [
-          {
-            "quantile": 37.114,
-            "p": 0.95,
-            "label": "bounded",
-            "color": "midnightblue"
-          },
-          {
-            "quantile": 14.955,
-            "p": 0.05,
-            "label": "unbounded",
-            "color": "darkred"
-          }
-        ]
+  {"quantile": 37.114, "p": 0.95, "label": "bounded", "color": "midnightblue"},
+  {"quantile": 14.955, "p": 0.05, "label": "unbounded", "color": "darkred"}
+]
       },
-      "mark": {
-        "type": "text",
-        "dx": -30,
-        "dy": -5,
-        "fontSize": 12
-      },
+      "mark": {"type": "text", "dx": -30, "dy": -5, "fontSize": 12},
       "encoding": {
-        "x": {
-          "field": "quantile",
-          "type": "quantitative"
-        },
-        "y": {
-          "field": "p",
-          "type": "quantitative"
-        },
-        "text": {
-          "field": "label",
-          "type": "nominal"
-        },
-        "color": {
-          "field": "color",
-          "type": "nominal",
-          "scale": null
-        }
+        "x": {"field": "quantile", "type": "quantitative"},
+        "y": {"field": "p", "type": "quantitative"},
+        "text": {"field": "label", "type": "nominal"},
+        "color": {"field": "color", "type": "nominal", "scale": null}
       }
     }
   ]

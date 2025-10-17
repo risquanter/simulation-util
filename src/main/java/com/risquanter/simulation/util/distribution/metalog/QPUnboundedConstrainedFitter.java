@@ -25,7 +25,8 @@ class QPUnboundedConstrainedFitter {
         if (pData.length != xData.length) {
             throw new IllegalArgumentException("pData and xData must match");
         }
-        Metalog.validateInputs(0.5, terms);
+        Metalog.validateInputs(terms);
+        Metalog.validateInputs(gridP);
         this.pData   = pData.clone();
         this.xData   = xData.clone();
         this.terms   = terms;
