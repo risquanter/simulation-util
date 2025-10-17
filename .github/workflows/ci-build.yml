@@ -37,14 +37,13 @@ jobs:
 
           # Copy artifacts with verification
           echo "Copying artifacts..."
-          cp target/java-metalog-distribution-*.jar out/ || exit 1
           cp target/simulation.util-*.jar out/ || exit 1
           cp pom.xml out/ || exit 1  # Add this line
 
           # Ensure we copied all variants (main, sources, javadoc)
           echo "Verifying all required artifacts..."
           for type in "" "-sources" "-javadoc"; do
-            if ! ls out/java-metalog-distribution-*${type}.jar >/dev/null 2>&1; then
+            if ! ls out/simulation.util-*${type}.jar >/dev/null 2>&1; then
               echo "Missing required artifact: ${type}.jar"
               exit 1
             fi
