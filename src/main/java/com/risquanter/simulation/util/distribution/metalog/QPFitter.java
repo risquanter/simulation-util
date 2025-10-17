@@ -1,4 +1,4 @@
-package com.risquanter.simulation;
+package com.risquanter.simulation.util.distribution.metalog;
 
 import java.util.stream.IntStream;
 

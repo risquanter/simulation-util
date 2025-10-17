@@ -5,8 +5,8 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Paths;
 
-import com.risquanter.simulation.Metalog;
-import com.risquanter.simulation.QPFitter;
+import com.risquanter.simulation.util.distribution.metalog.Metalog;
+import com.risquanter.simulation.util.distribution.metalog.QPFitter;
 
 import static com.risquanter.examples.ExampleUtil.loadResourceAsString;
 import static com.risquanter.examples.ExampleUtil.buildObsJson;
@@ -24,7 +24,7 @@ public class ExpertOpinionDemo1 {
         // 1) Expert’s quantiles
         double[] pVals = {0.10, 0.50, 0.90};
         double[] xVals = {17.0, 24.0, 35.0};
-        int terms      = pVals.length;  
+        int terms      = pVals.length;
 
         Double lowerBound = 16.0;
         Double upperBound = 40.0;
@@ -68,7 +68,7 @@ public class ExpertOpinionDemo1 {
         System.out.printf("Q(1-eps)  = %.12f%n", metalogBounded.quantile(1 - EPS));
     }
 
-    
+
 
     /**
      * Writes `content` to src/test/resources/`filename`, creating

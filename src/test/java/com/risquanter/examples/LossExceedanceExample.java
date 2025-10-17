@@ -1,13 +1,16 @@
 package com.risquanter.examples;
 
+
+import com.risquanter.simulation.util.distribution.metalog.Metalog;
+import com.risquanter.simulation.util.distribution.metalog.QPFitter;
+
+
 import java.util.Arrays;
 import java.util.Random;
 import java.util.StringJoiner;
 
 import org.apache.commons.math3.distribution.LogNormalDistribution;
 
-import com.risquanter.simulation.Metalog;
-import com.risquanter.simulation.QPFitter;
 
 import static org.apache.commons.math3.util.FastMath.log;
 
@@ -27,7 +30,7 @@ public class LossExceedanceExample {
         int sims = 10_000;
         Random rnd = new Random(42);
 
-        // Log-Normal parameters: we derive a mean of ln(X), standard deviation of ln(X), 
+        // Log-Normal parameters: we derive a mean of ln(X), standard deviation of ln(X),
         // from a lower and upper bound on X.
         // Here, a loss between 100 and 200 with 80% confidence.
         double lossLB = 100;
@@ -91,7 +94,7 @@ public class LossExceedanceExample {
         // 6) Finally emit the JSON block you can paste into Vega-Lite
          System.out.println(sjQuantile.toString());
 
-   
+
         // System.out.println(sjHist.toString());
         // 8) Build and print the theoretical PDF of the log-normal(μ,σ) over a grid of
         // x values
@@ -118,7 +121,7 @@ public class LossExceedanceExample {
 
     /**
      * Extracts quantile values at fixed probabilities from the sorted losses array.
-     * 
+     *
      * @param losses array of simulated losses
      * @return a QuantileResult containing p[] and x[] arrays
      */

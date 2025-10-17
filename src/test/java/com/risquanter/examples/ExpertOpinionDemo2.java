@@ -5,8 +5,8 @@ import static com.risquanter.examples.ExampleUtil.buildObsJson;
 import static com.risquanter.examples.ExampleUtil.buildFitJson;
 import static com.risquanter.examples.ExampleUtil.writeToTestResource;
 
-import com.risquanter.simulation.Metalog;
-import com.risquanter.simulation.QPFitter;
+import com.risquanter.simulation.util.distribution.metalog.Metalog;
+import com.risquanter.simulation.util.distribution.metalog.QPFitter;
 
 import static com.risquanter.examples.ExampleUtil.buildRulesJson;
 import static com.risquanter.examples.ExampleUtil.buildLabelJson;

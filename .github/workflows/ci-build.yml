@@ -38,6 +38,8 @@ jobs:
           # Copy artifacts with verification
           echo "Copying artifacts..."
           cp target/java-metalog-distribution-*.jar out/ || exit 1
+          cp target/simulation.util-*.jar out/ || exit 1
+          cp pom.xml out/ || exit 1  # Add this line
 
           # Ensure we copied all variants (main, sources, javadoc)
           echo "Verifying all required artifacts..."

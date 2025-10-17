@@ -2,8 +2,8 @@ package com.risquanter.examples;
 
 import java.util.Arrays;
 
-import com.risquanter.simulation.Metalog;
-import com.risquanter.simulation.QPFitter;
+import com.risquanter.simulation.util.distribution.metalog.Metalog;
+import com.risquanter.simulation.util.distribution.metalog.QPFitter;
 
 import static com.risquanter.examples.ExampleUtil.loadResourceAsString;
 import static com.risquanter.examples.ExampleUtil.buildObsJson;
@@ -32,7 +32,7 @@ public class ObservationalMetalogFitExample {
             pValues[i] = (i + 0.5) / n; // Hazen plotting positions
         }
 
-        // 3) Fit a metalog to 9 data points with 5 terms and 9 terms (exact fit)  
+        // 3) Fit a metalog to 9 data points with 5 terms and 9 terms (exact fit)
         // (more terms = more flexible, but also more complexity / chance for overfitting)
         int terms = 4;
 

@@ -3,8 +3,8 @@ package com.risquanter.examples;
 import org.apache.commons.math3.distribution.LogNormalDistribution;
 import org.apache.commons.math3.random.Well19937c;
 
-import com.risquanter.simulation.Metalog;
-import com.risquanter.simulation.QPFitter;
+import com.risquanter.simulation.util.distribution.metalog.Metalog;
+import com.risquanter.simulation.util.distribution.metalog.QPFitter;
 
 import org.apache.commons.math3.random.RandomGenerator;
 
@@ -37,7 +37,7 @@ public class RiskHierarchyMetalogPGrid {
             //double pLoss = inputs[r][2];
             //double pNo   = 1.0 - pLoss;
 
-            // pick 9 points in the (0,1) → tail  
+            // pick 9 points in the (0,1) → tail
             // we only anchor the nonzero portion at normalized probabilities
             double[] tailP = { 0.001,0.02,0.10,0.25,0.50,0.75,0.90,0.98,0.999 };
             List<Double> pAnch = new ArrayList<>();
@@ -46,7 +46,7 @@ public class RiskHierarchyMetalogPGrid {
             // build a LogNormal that covers [lb,ub] at central 80%
             double meanLog = (Math.log(lb) + Math.log(ub))/2.0;
             double varLog  = Math.pow((Math.log(ub)-Math.log(lb))/3.29, 2);
-            LogNormalDistribution lnDist = 
+            LogNormalDistribution lnDist =
                 new LogNormalDistribution(hdrRng, meanLog, Math.sqrt(varLog));
 
             for (double tp : tailP) {

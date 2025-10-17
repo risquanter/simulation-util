@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see &lt;https://www.gnu.org/licenses/&gt;.
  */
-package com.risquanter.simulation;
+package com.risquanter.simulation.util.distribution.metalog;
 
 import org.apache.commons.math3.util.FastMath;
 

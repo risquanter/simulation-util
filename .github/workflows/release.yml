@@ -58,14 +58,41 @@ jobs:
             [ -f "$s" ] && sigstore verify --bundle "$s" || true
           done
 
+      - name: Verify YubiKey and get signing key
+        env:
+          GPG_TTY: /dev/tty1
+        run: |
+          echo "Checking for YubiKey..."
+          if ! gpg --card-status | grep -q "Signature key"; then
+            echo "Error: No YubiKey with signing capability detected"
+            exit 1
+          fi
+
+          # Get the signing key ID from the YubiKey
+          SIGNING_KEY=$(gpg --card-status | grep "Signature key" | awk '{print $NF}')
+          if [ -z "$SIGNING_KEY" ]; then
+            echo "Error: Could not determine signing key from YubiKey"
+            exit 1
+          fi
+
+          echo "YubiKey signing key: $SIGNING_KEY"
+          echo "YUBIKEY_SIGNING_KEY=$SIGNING_KEY" >> $GITHUB_ENV
+
       - name: Sign artifacts with YubiKey (interactive)
         env:
           GPG_TTY: /dev/tty1
         run: |
           cd /tmp/artifacts
           for a in *.jar; do
-            echo "Signing $a"
-            gpg --batch --yes --detach-sign --armor --output "${a}.asc" "$a"
+            echo "Signing $a with YubiKey..."
+            # Use specific YubiKey key, remove --batch to allow PIN entry
+            gpg --local-user "$YUBIKEY_SIGNING_KEY" --detach-sign --armor --output "${a}.asc" "$a"
+
+            # Create signature verification file with key fingerprint
+            echo "Signature created by YubiKey: $YUBIKEY_SIGNING_KEY" > "${a}.keyinfo"
+            echo "Timestamp: $(date -u)" >> "${a}.keyinfo"
+            echo "Workflow: $GITHUB_WORKFLOW" >> "${a}.keyinfo"
+            echo "Run ID: $GITHUB_RUN_ID" >> "${a}.keyinfo"
           done
 
       - name: Create signed git tag
@@ -103,15 +130,35 @@ jobs:
           SONATYPE_PASSWORD: ${{ secrets.SONATYPE_PASSWORD }}
         run: |
           cd /tmp/artifacts
-          for jar in *.jar; do
-            mvn -B deploy:deploy-file \
-              -Durl=https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/ \
-              -DrepositoryId=ossrh \
-              -Dfile="$jar" \
-              -DpomFile=./pom.xml \
-              -DgroupId=com.risquanter.simulation \
-              -DartifactId=java-metalog-distribution \
-              -Dversion=0.6.0 \
-              -Dpackaging=jar \
-              -DgeneratePom=false
-          done
+
+          # Find the main JAR file (not sources or javadoc)
+          MAIN_JAR=$(ls *.jar | grep -v -- "-sources.jar\|-javadoc.jar" | head -1)
+          SOURCES_JAR=$(ls *-sources.jar | head -1)
+          JAVADOC_JAR=$(ls *-javadoc.jar | head -1)
+
+          if [ -z "$MAIN_JAR" ] || [ -z "$SOURCES_JAR" ] || [ -z "$JAVADOC_JAR" ]; then
+            echo "Error: Missing required JAR files"
+            echo "Main: $MAIN_JAR"
+            echo "Sources: $SOURCES_JAR"
+            echo "Javadoc: $JAVADOC_JAR"
+            exit 1
+          fi
+
+          echo "Deploying artifacts with all required files and signatures..."
+
+          # Deploy main JAR with all required files
+          mvn -B deploy:deploy-file \
+            -Durl=https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/ \
+            -DrepositoryId=ossrh \
+            -Dfile="$MAIN_JAR" \
+            -DpomFile="/workspace/pom.xml" \
+            -DgroupId=com.risquanter \
+            -DartifactId=simulation.util \
+            -Dversion=0.6.0 \
+            -Dpackaging=jar \
+            -DgeneratePom=false \
+            -Dfiles="$SOURCES_JAR,$JAVADOC_JAR,${MAIN_JAR}.asc,${SOURCES_JAR}.asc,${JAVADOC_JAR}.asc,${MAIN_JAR}.sig,${MAIN_JAR}.cert" \
+            -Dclassifiers="sources,javadoc,signature,sources-signature,javadoc-signature,sigstore-sig,sigstore-cert" \
+            -Dtypes="jar,jar,asc,asc,asc,sig,cert"
+
+          echo "Deployment completed with YubiKey signatures and Sigstore attestations."

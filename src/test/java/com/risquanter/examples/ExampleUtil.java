@@ -9,12 +9,12 @@ import java.nio.file.Paths;
 import java.util.Scanner;
 import java.util.StringJoiner;
 
-import com.risquanter.simulation.Metalog;
+import com.risquanter.simulation.util.distribution.metalog.Metalog;
 
 public class ExampleUtil {
 
     private static final int STEPS = 100; // prints p=0.00…1.00
-    private static final double EPS   = 1e-12;  
+    private static final double EPS   = 1e-12;
 
     static String loadResourceAsString(String resourcePath) {
         InputStream in = ObservationalMetalogFitExample.class

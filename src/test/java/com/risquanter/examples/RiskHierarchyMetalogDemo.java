@@ -3,8 +3,8 @@ package com.risquanter.examples;
 import org.apache.commons.math3.distribution.LogNormalDistribution;
 import org.apache.commons.math3.random.Well19937c;
 
-import com.risquanter.simulation.Metalog;
-import com.risquanter.simulation.QPFitter;
+import com.risquanter.simulation.util.distribution.metalog.Metalog;
+import com.risquanter.simulation.util.distribution.metalog.QPFitter;
 
 import org.apache.commons.math3.random.RandomGenerator;
 
