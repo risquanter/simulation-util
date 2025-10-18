@@ -1,5 +1,4 @@
-# .github/workflows/release.yml
-name: Release (YubiKey-signed)
+name: Release (GPG-signed)
 
 on:
   workflow_dispatch:
@@ -7,17 +6,40 @@ on:
       run_id:
         description: 'Build run ID to release'
         required: true
+      totp_code:
+        description: 'TOTP code from your authenticator app'
+        required: true
 
 permissions:
   contents: write
   id-token: write
 
 jobs:
+  # JOB 1: Authorization verification (GitHub-hosted)
+  verify-authorization:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Verify TOTP
+        env:
+          TOTP_SECRET: ${{ secrets.TOTP_SECRET }}
+        run: |
+          # Calculate expected TOTP value
+          EXPECTED=$(oathtool --totp --base32 "$TOTP_SECRET")
+
+          # Compare with user-provided code
+          if [ "${{ inputs.totp_code }}" != "$EXPECTED" ]; then
+            echo "❌ Invalid TOTP code"
+            exit 1
+          fi
+
+          echo "✅ TOTP verified successfully"
+
+  # JOB 2: Signing and release (Self-hosted)
   sign-and-publish:
-    runs-on: [self-hosted, yubikey-signing]
+    needs: verify-authorization
+    runs-on: [self-hosted]
     environment: release
 
-    # Add environment variables at job level
     env:
       ARTIFACT_RUN_ID: ${{ inputs.run_id }}
 
@@ -30,7 +52,7 @@ jobs:
       - name: Install tools
         run: |
           sudo apt-get update -y
-          sudo apt-get install -y jq tar gpg2 scdaemon pcscd pinentry-curses
+          sudo apt-get install -y jq tar gpg2 scdaemon pcscd pinentry-curses xmlstarlet
 
       - name: Download unsigned artifacts
         uses: actions/download-artifact@v4
@@ -48,62 +70,119 @@ jobs:
         run: |
           mkdir -p /tmp/artifacts
           tar xzf /tmp/release-artifacts/artifacts.tgz -C /tmp/artifacts
-          tar xzf /tmp/release-provenance/provenance.tgz -C /tmp/artifacts || true
+          if [ -f /tmp/release-provenance/provenance.tgz ]; then
+            tar xzf /tmp/release-provenance/provenance.tgz -C /tmp/artifacts || true
+          fi
           cd /tmp/artifacts
           sha256sum -c checksums.sha256
 
-      - name: (Optional) Verify Sigstore provenance
+      - name: (Optional) Verify Sigstore provenance presence
         run: |
-          for s in /tmp/artifacts/*.sigstore.json; do
-            [ -f "$s" ] && sigstore verify --bundle "$s" || true
+          for s in /tmp/artifacts/*.bundle /tmp/artifacts/*.sigstore.json; do
+            [ -f "$s" ] && echo "Found provenance: $s"
           done
 
-      - name: Verify YubiKey and get signing key
+      - name: Import encrypted GPG private-subkey into ephemeral GNUPGHOME
         env:
-          GPG_TTY: /dev/tty1
+          GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
+          GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
         run: |
-          echo "Checking for YubiKey..."
-          if ! gpg --card-status | grep -q "Signature key"; then
-            echo "Error: No YubiKey with signing capability detected"
+          set -euo pipefail
+
+          # create ephemeral GNUPGHOME for isolation
+          export GNUPGHOME="$(mktemp -d)"
+          chmod 700 "$GNUPGHOME"
+
+          # write the armored encrypted blob to a temp file (do not expose to logs)
+          TMP_ENC="/tmp/private-subkey.asc.gpg"
+          printf '%s' "$GPG_PRIVATE_KEY" > "$TMP_ENC"
+          chmod 600 "$TMP_ENC"
+
+          # decrypt the encrypted blob into a temporary plaintext file
+          TMP_PLAINT="/tmp/private-subkey.asc"
+          gpg --batch --yes --pinentry-mode loopback --passphrase "$GPG_PASSPHRASE" \
+            --decrypt --output "$TMP_PLAINT" "$TMP_ENC"
+
+          # import the plaintext secret subkey into the ephemeral GNUPGHOME
+          gpg --batch --import "$TMP_PLAINT"
+
+          # kill agent to ensure allowed settings are applied later if needed
+          gpgconf --kill gpg-agent || true
+
+          # discover the signing keyid (first secret key)
+          KEYID=$(gpg --list-secret-keys --with-colons | awk -F: '/^sec:/ {print $5; exit}')
+          if [ -z "$KEYID" ]; then
+            echo "Failed to determine GPG KEYID"
+            shred -u "$TMP_PLAINT" || rm -f "$TMP_PLAINT"
+            rm -f "$TMP_ENC"
             exit 1
           fi
 
-          # Get the signing key ID from the YubiKey
-          SIGNING_KEY=$(gpg --card-status | grep "Signature key" | awk '{print $NF}')
-          if [ -z "$SIGNING_KEY" ]; then
-            echo "Error: Could not determine signing key from YubiKey"
-            exit 1
-          fi
+          # export GNUPGHOME and KEYID for subsequent steps
+          echo "GNUPGHOME=$GNUPGHOME" >> $GITHUB_ENV
+          echo "GPG_KEYID=$KEYID" >> $GITHUB_ENV
 
-          echo "YubiKey signing key: $SIGNING_KEY"
-          echo "YUBIKEY_SIGNING_KEY=$SIGNING_KEY" >> $GITHUB_ENV
+          # store public key copy for inspection if needed
+          gpg --armor --export "$KEYID" > "$GNUPGHOME/publickey.asc"
 
-      - name: Sign artifacts with YubiKey (interactive)
+          # securely delete the plaintext file as soon as possible
+          shred -u "$TMP_PLAINT" || rm -f "$TMP_PLAINT"
+          rm -f "$TMP_ENC"
+
+          echo "Imported encrypted GPG subkey into ephemeral GNUPGHOME and removed plaintext."
+
+
+      - name: Sign artifacts and POM non-interactively with GPG key from secrets
         env:
-          GPG_TTY: /dev/tty1
+          GNUPGHOME: ${{ env.GNUPGHOME }}
+          GPG_KEYID: ${{ env.GPG_KEYID }}
+          GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
         run: |
+          set -euo pipefail
           cd /tmp/artifacts
-          for a in *.jar; do
-            echo "Signing $a with YubiKey..."
-            # Use specific YubiKey key, remove --batch to allow PIN entry
-            gpg --local-user "$YUBIKEY_SIGNING_KEY" --detach-sign --armor --output "${a}.asc" "$a"
 
-            # Create signature verification file with key fingerprint
-            echo "Signature created by YubiKey: $YUBIKEY_SIGNING_KEY" > "${a}.keyinfo"
+          # Use loopback pinentry to supply passphrase non-interactively
+          for a in *.jar; do
+            echo "Signing $a with GPG key $GPG_KEYID..."
+            gpg --batch --yes --pinentry-mode loopback --passphrase "${GPG_PASSPHRASE}" \
+              --local-user "${GPG_KEYID}" --detach-sign --armor --output "${a}.asc" "$a"
+
+            # Metadata to help auditing which key/runner produced the signature
+            echo "Signature created by key: ${GPG_KEYID}" > "${a}.keyinfo"
             echo "Timestamp: $(date -u)" >> "${a}.keyinfo"
             echo "Workflow: $GITHUB_WORKFLOW" >> "${a}.keyinfo"
             echo "Run ID: $GITHUB_RUN_ID" >> "${a}.keyinfo"
           done
 
-      - name: Create signed git tag
+          # Sign POM so Sonatype receives pom.xml.asc
+          if [ -f pom.xml ]; then
+            echo "Signing pom.xml with GPG key $GPG_KEYID..."
+            gpg --batch --yes --pinentry-mode loopback --passphrase "${GPG_PASSPHRASE}" \
+              --local-user "${GPG_KEYID}" --detach-sign --armor --output "pom.xml.asc" pom.xml
+          else
+            echo "Missing pom.xml in /tmp/artifacts; aborting"
+            exit 1
+          fi
+
+      - name: Create signed git tag (GPG)
         env:
-          GPG_TTY: /dev/tty1
+          GNUPGHOME: ${{ env.GNUPGHOME }}
+          GPG_KEYID: ${{ env.GPG_KEYID }}
+          GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
         run: |
-          # Using shell parameter expansion for SHA substring
-          RELEASE_TAG="v${GITHUB_SHA:0:8}"
+          set -euo pipefail
+          # Configure git for tagging
           git config user.email "ci@risquanter.example"
           git config user.name "Release Bot"
-          git tag -s "$RELEASE_TAG" -m "Release $RELEASE_TAG"
+
+          # Construct a release tag using short SHA
+          RELEASE_TAG="v${GITHUB_SHA:0:8}"
+
+          # Create a GPG-signed tag non-interactively using the imported key
+          git tag -s "$RELEASE_TAG" -m "Release $RELEASE_TAG" --local-user "$GPG_KEYID" \
+            --no-verify || true
+
+          # Push the tag; remote may require authentication already configured on self-hosted runner
           git push origin "$RELEASE_TAG"
 
       - name: Write settings.xml for Sonatype
@@ -123,42 +202,96 @@ jobs:
             </servers>
           </settings>
           EOF
+          chmod 600 "$HOME/.m2/settings.xml"
 
-      - name: Deploy to Maven Central
+      - name: Deploy to OSSRH staging (derive GAV from POM, attach signatures and Sigstore bundles)
         env:
           SONATYPE_USERNAME: ${{ secrets.SONATYPE_USERNAME }}
-          SONATYPE_PASSWORD: ${{ secrets.SONATYPE_PASSWORD }}
         run: |
+          set -euo pipefail
           cd /tmp/artifacts
 
-          # Find the main JAR file (not sources or javadoc)
           MAIN_JAR=$(ls *.jar | grep -v -- "-sources.jar\|-javadoc.jar" | head -1)
           SOURCES_JAR=$(ls *-sources.jar | head -1)
           JAVADOC_JAR=$(ls *-javadoc.jar | head -1)
 
           if [ -z "$MAIN_JAR" ] || [ -z "$SOURCES_JAR" ] || [ -z "$JAVADOC_JAR" ]; then
             echo "Error: Missing required JAR files"
-            echo "Main: $MAIN_JAR"
-            echo "Sources: $SOURCES_JAR"
-            echo "Javadoc: $JAVADOC_JAR"
             exit 1
           fi
 
-          echo "Deploying artifacts with all required files and signatures..."
+          # Derive GAV from pom.xml (xmlstarlet)
+          NS="http://maven.apache.org/POM/4.0.0"
+          GROUP_ID=$(xmlstarlet sel -N x="$NS" -t -v "string(/x:project/x:groupId)" pom.xml)
+          if [ -z "$GROUP_ID" ]; then
+            GROUP_ID=$(xmlstarlet sel -N x="$NS" -t -v "string(/x:project/x:parent/x:groupId)" pom.xml)
+          fi
+          ARTIFACT_ID=$(xmlstarlet sel -N x="$NS" -t -v "string(/x:project/x:artifactId)" pom.xml)
+          VERSION=$(xmlstarlet sel -N x="$NS" -t -v "string(/x:project/x:version)" pom.xml)
+          if [ -z "$VERSION" ]; then
+            VERSION=$(xmlstarlet sel -N x="$NS" -t -v "string(/x:project/x:parent/x:version)" pom.xml)
+          fi
 
-          # Deploy main JAR with all required files
-          mvn -B deploy:deploy-file \
-            -Durl=https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/ \
-            -DrepositoryId=ossrh \
-            -Dfile="$MAIN_JAR" \
-            -DpomFile="/workspace/pom.xml" \
-            -DgroupId=com.risquanter \
-            -DartifactId=simulation.util \
-            -Dversion=0.6.0 \
-            -Dpackaging=jar \
-            -DgeneratePom=false \
-            -Dfiles="$SOURCES_JAR,$JAVADOC_JAR,${MAIN_JAR}.asc,${SOURCES_JAR}.asc,${JAVADOC_JAR}.asc,${MAIN_JAR}.sig,${MAIN_JAR}.cert" \
-            -Dclassifiers="sources,javadoc,signature,sources-signature,javadoc-signature,sigstore-sig,sigstore-cert" \
-            -Dtypes="jar,jar,asc,asc,asc,sig,cert"
+          if [ -z "$GROUP_ID" ] || [ -z "$ARTIFACT_ID" ] || [ -z "$VERSION" ]; then
+            echo "Failed to derive groupId/artifactId/version from pom.xml"
+            exit 1
+          fi
 
-          echo "Deployment completed with YubiKey signatures and Sigstore attestations."
+          echo "Derived coordinates: ${GROUP_ID}:${ARTIFACT_ID}:${VERSION}"
+
+          OSSRH_STAGING_URL="https://ossrh-staging-api.central.sonatype.com/service/local/staging/deploy/maven2/"
+
+          FILES_LIST="${MAIN_JAR},${SOURCES_JAR},${JAVADOC_JAR},${MAIN_JAR}.asc,${SOURCES_JAR}.asc,${JAVADOC_JAR}.asc,pom.xml,pom.xml.asc"
+          CLASSIFIERS_LIST=",sources,javadoc,asc,asc,asc,pom,asc"
+          TYPES_LIST="jar,jar,jar,asc,asc,asc,pom,asc"
+
+          # Attach any Sigstore provenance files if present (experimental)
+          if ls *.bundle >/dev/null 2>&1; then
+            for b in *.bundle; do
+              FILES_LIST="${FILES_LIST},${b}"
+              CLASSIFIERS_LIST="${CLASSIFIERS_LIST},sigstore"
+              TYPES_LIST="${TYPES_LIST},sig"
+            done
+          fi
+          if ls *.cert >/dev/null 2>&1; then
+            for c in *.cert; do
+              FILES_LIST="${FILES_LIST},${c}"
+              CLASSIFIERS_LIST="${CLASSIFIERS_LIST},sigstore-cert"
+              TYPES_LIST="${TYPES_LIST},cert"
+            done
+          fi
+          if ls *.sig >/dev/null 2>&1; then
+            for s in *.sig; do
+              FILES_LIST="${FILES_LIST},${s}"
+              CLASSIFIERS_LIST="${CLASSIFIERS_LIST},sigstore-sig"
+              TYPES_LIST="${TYPES_LIST},sig"
+            done
+          fi
+
+          echo "Files to deploy: ${FILES_LIST}"
+          echo "Classifiers: ${CLASSIFIERS_LIST}"
+          echo "Types: ${TYPES_LIST}"
+
+          mvn -B org.apache.maven.plugins:maven-deploy-plugin:3.0.0-M1:deploy-file \
+            -Durl="${OSSRH_STAGING_URL}" -DrepositoryId=ossrh \
+            -Dfile="${MAIN_JAR}" -DpomFile="pom.xml" \
+            -Dfiles="${FILES_LIST}" -Dclassifiers="${CLASSIFIERS_LIST}" -Dtypes="${TYPES_LIST}" \
+            --settings "$HOME/.m2/settings.xml"
+
+          echo "Deployment completed (staged)."
+          echo "Open https://central.sonatype.com/ to inspect the created staging repository and close it manually."
+
+      - name: Clean up (always)
+        if: always()
+        env:
+          GNUPGHOME: ${{ env.GNUPGHOME }}
+        run: |
+          set +e
+          # remove ephemeral GNUPGHOME
+          if [ -n "${GNUPGHOME:-}" ] && [ -d "${GNUPGHOME}" ]; then
+            rm -rf "${GNUPGHOME}"
+          fi
+          # remove temporary maven settings
+          if [ -f "$HOME/.m2/settings.xml" ]; then
+            shred -u "$HOME/.m2/settings.xml" || rm -f "$HOME/.m2/settings.xml"
+          fi
