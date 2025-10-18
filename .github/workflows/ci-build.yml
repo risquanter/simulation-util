@@ -38,7 +38,8 @@ jobs:
           # Copy artifacts with verification
           echo "Copying artifacts..."
           cp target/simulation.util-*.jar out/ || exit 1
-          cp pom.xml out/ || exit 1  # Add this line
+          # --- CHANGED: copy pom.xml into out so it is included in artifacts.tgz
+          cp pom.xml out/ || exit 1
 
           # Ensure we copied all variants (main, sources, javadoc)
           echo "Verifying all required artifacts..."
@@ -53,12 +54,14 @@ jobs:
           echo "Contents of out directory:"
           ls -la out/
 
-          # Generate checksums
+          # Generate checksums including pom.xml
           cd out
-          sha256sum *.jar > checksums.sha256
+          # --- CHANGED: include pom.xml in checksums so integrity covers the POM
+          sha256sum *.jar pom.xml > checksums.sha256
 
-          # Create artifacts archive
-          tar czf artifacts.tgz *.jar checksums.sha256
+          # Create artifacts archive including pom.xml and checksums
+          # --- CHANGED: include pom.xml in artifacts.tgz so release job can use it
+          tar czf artifacts.tgz *.jar pom.xml checksums.sha256
 
           # Show final structure
           echo "Final out directory contents:"
@@ -80,12 +83,21 @@ jobs:
             jq -r '.Sig' "${file}.bundle" > "${file}.sig"
             jq -r '.Cert' "${file}.bundle" > "${file}.cert"
 
-            # Generate SLSA provenance with blob signing
+            # Generate SLSA provenance with blob signing (attestation)
             echo '{"buildType": "https://github.com/actions/runner","builder": {"id": "GitHub Actions"}}' | \
             cosign sign-blob --yes --bundle "${file}.attest.bundle" -
           done
 
-          # Package provenance files
+          # --- CHANGED: also sign pom.xml with Sigstore and produce pom.xml.bundle / pom.xml.sig / pom.xml.cert
+          # Sign pom.xml and generate bundle + extracted sig/cert
+          cosign sign-blob --yes --bundle "pom.xml.bundle" "pom.xml"
+          jq -r '.Sig' "pom.xml.bundle" > "pom.xml.sig"
+          jq -r '.Cert' "pom.xml.bundle" > "pom.xml.cert"
+          # Optionally produce an attest bundle for the pom as well
+          echo '{"buildType": "https://github.com/actions/runner","builder": {"id": "GitHub Actions"}}' | \
+            cosign sign-blob --yes --bundle "pom.xml.attest.bundle" -
+
+          # Package provenance files (include pom-related provenance)
           tar czf provenance.tgz *.sig *.cert *.bundle
 
       - name: Upload build artifacts
