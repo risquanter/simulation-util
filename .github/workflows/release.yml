@@ -18,26 +18,22 @@ jobs:
   verify-authorization:
     runs-on: ubuntu-latest
     steps:
+      - name: Install oathtool
+        run: sudo apt-get update && sudo apt-get install -y oathtool
+
       - name: Verify TOTP
         env:
           TOTP_SECRET: ${{ secrets.TOTP_SECRET }}
           INPUT_TOTP: ${{ inputs.totp_code }}
         run: |
           set -euo pipefail
-
-          # show current UTC time for debugging
           date --utc
-
-          # Calculate expected TOTP value using 60s time step
           EXPECTED=$(oathtool --totp --base32 --time-step-size 60 "$TOTP_SECRET")
-
-          # Compare with user-provided code
           if [ "${INPUT_TOTP}" != "$EXPECTED" ]; then
             echo "❌ Invalid TOTP code"
             echo "Expected: $EXPECTED"
             exit 1
           fi
-
           echo "✅ TOTP verified successfully"
 
 
