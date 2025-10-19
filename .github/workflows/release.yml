@@ -1,4 +1,4 @@
-name: Release (GPG-signed)
+name: Release (SonaType, GPG-signed)
 
 on:
   workflow_dispatch:
@@ -15,24 +15,31 @@ permissions:
   id-token: write
 
 jobs:
-  # JOB 1: Authorization verification (GitHub-hosted)
   verify-authorization:
     runs-on: ubuntu-latest
     steps:
       - name: Verify TOTP
         env:
           TOTP_SECRET: ${{ secrets.TOTP_SECRET }}
+          INPUT_TOTP: ${{ inputs.totp_code }}
         run: |
-          # Calculate expected TOTP value
-          EXPECTED=$(oathtool --totp --base32 "$TOTP_SECRET")
+          set -euo pipefail
+
+          # show current UTC time for debugging
+          date --utc
+
+          # Calculate expected TOTP value using 60s time step
+          EXPECTED=$(oathtool --totp --base32 --time-step-size 60 "$TOTP_SECRET")
 
           # Compare with user-provided code
-          if [ "${{ inputs.totp_code }}" != "$EXPECTED" ]; then
+          if [ "${INPUT_TOTP}" != "$EXPECTED" ]; then
             echo "❌ Invalid TOTP code"
+            echo "Expected: $EXPECTED"
             exit 1
           fi
 
           echo "✅ TOTP verified successfully"
+
 
   # JOB 2: Signing and release (Self-hosted)
   sign-and-publish:
