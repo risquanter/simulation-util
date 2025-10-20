@@ -1,4 +1,4 @@
-name: Release (SonaType , GPG-signed)
+name: Release (SonaType, GPG-signed)
 
 on:
   workflow_dispatch:
