@@ -75,16 +75,22 @@ jobs:
           sudo apt-get install -y jq tar gpg xmlstarlet
 
       - name: Download unsigned artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: unsigned-artifacts-${{ inputs.run_id }}
-          path: /tmp/release-artifacts
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh run download ${{ inputs.run_id }} \
+            --name unsigned-artifacts-${{ inputs.run_id }} \
+            --dir /tmp/release-artifacts \
+            --repo ${{ github.repository }}
 
       - name: Download provenance
-        uses: actions/download-artifact@v4
-        with:
-          name: provenance-${{ inputs.run_id }}
-          path: /tmp/release-provenance
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh run download ${{ inputs.run_id }} \
+            --name provenance-${{ inputs.run_id }} \
+            --dir /tmp/release-provenance \
+            --repo ${{ github.repository }}
 
       - name: Extract and verify
         run: |
