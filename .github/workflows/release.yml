@@ -1,4 +1,21 @@
-name: Release (SonaType, GPG-signed)
+###############################################################
+# This workflow is adapted for Maven Central Publisher Portal
+# Migration from OSSRH: all endpoints, authentication, and deployment
+# now use the Central Publisher Portal API and token-based auth.
+#
+# Required repository secrets:
+#   - GPG_PRIVATE_KEY: ASCII-armored GPG private key for signing
+#   - GPG_PASSPHRASE: Passphrase for the GPG key
+#   - TOTP_SECRET: Base32 secret for TOTP verification
+#   - CENTRAL_PORTAL_USERNAME: Username (special purpose) for Maven Central Publisher Portal
+#   - CENTRAL_PORTAL_TOKEN: Token generated from Maven Central Publisher Portal
+#
+# For details, see:
+#   https://central.sonatype.org/publish/publish-portal-maven/
+#   https://central.sonatype.org/publish/generate-portal-token/
+###############################################################
+
+name: Release (Maven Central Publisher Portal, GPG-signed)
 
 on:
   workflow_dispatch:
@@ -19,7 +36,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Install oathtool
-        run: sudo apt-get update && sudo apt-get install -y oathtool
+        run: sudo apt-get update && sudo apt-get install --no-install-recommends -y oathtool
 
       - name: Verify TOTP
         env:
@@ -37,10 +54,10 @@ jobs:
           echo "✅ TOTP verified successfully"
 
 
-  # JOB 2: Signing and release (Self-hosted)
+  # JOB 2: Signing and release (ubuntu-latest)
   sign-and-publish:
     needs: verify-authorization
-    runs-on: [self-hosted]
+    runs-on: ubuntu-latest
     environment: release
 
     env:
@@ -55,7 +72,7 @@ jobs:
       - name: Install tools
         run: |
           sudo apt-get update -y
-          sudo apt-get install -y jq tar gpg2 scdaemon pcscd pinentry-curses xmlstarlet
+          sudo apt-get install -y jq tar gpg2 xmlstarlet
 
       - name: Download unsigned artifacts
         uses: actions/download-artifact@v4
@@ -172,44 +189,50 @@ jobs:
           GNUPGHOME: ${{ env.GNUPGHOME }}
           GPG_KEYID: ${{ env.GPG_KEYID }}
           GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -euo pipefail
-          # Configure git for tagging
-          git config user.email "ci@risquanter.example"
-          git config user.name "Release Bot"
+          # Configure git for tagging and authentication
+          git config --global user.email "ci@risquanter.example"
+          git config --global user.name "Release Bot"
+          git config --global url."https://${GITHUB_TOKEN}@github.com/".insteadOf "https://github.com/"
 
           # Construct a release tag using short SHA
           RELEASE_TAG="v${GITHUB_SHA:0:8}"
 
           # Create a GPG-signed tag non-interactively using the imported key
-          git tag -s "$RELEASE_TAG" -m "Release $RELEASE_TAG" --local-user "$GPG_KEYID" \
-            --no-verify || true
+          git tag -s "$RELEASE_TAG" -m "Release $RELEASE_TAG" --local-user "$GPG_KEYID" --no-verify || true
 
-          # Push the tag; remote may require authentication already configured on self-hosted runner
+          # Push the tag using authenticated git
           git push origin "$RELEASE_TAG"
 
-      - name: Write settings.xml for Sonatype
+      # Write settings.xml for Central Publisher Portal
+      # Uses CENTRAL_PORTAL_USERNAME and CENTRAL_PORTAL_TOKEN for authentication
+      # Paste the generated <server> block from the portal as shown below
+      - name: Write settings.xml for Central Publisher Portal
         env:
-          SONATYPE_USERNAME: ${{ secrets.SONATYPE_USERNAME }}
-          SONATYPE_PASSWORD: ${{ secrets.SONATYPE_PASSWORD }}
+          CENTRAL_PORTAL_USERNAME: ${{ secrets.CENTRAL_PORTAL_USERNAME }}
+          CENTRAL_PORTAL_TOKEN: ${{ secrets.CENTRAL_PORTAL_TOKEN }}
         run: |
           mkdir -p "$HOME/.m2"
-          cat > "$HOME/.m2/settings.xml" << 'EOF'
+          cat > "$HOME/.m2/settings.xml" << EOF
           <settings>
             <servers>
               <server>
-                <id>ossrh</id>
-                <username>${env.SONATYPE_USERNAME}</username>
-                <password>${env.SONATYPE_PASSWORD}</password>
+                <id>central</id>
+                <username>${CENTRAL_PORTAL_USERNAME}</username>
+                <password>${CENTRAL_PORTAL_TOKEN}</password>
               </server>
             </servers>
           </settings>
           EOF
           chmod 600 "$HOME/.m2/settings.xml"
 
-      - name: Deploy to OSSRH staging (derive GAV from POM, attach signatures and Sigstore bundles)
+      # Deploy to Maven Central Publisher Portal (derive GAV from POM, attach signatures and Sigstore bundles)
+      # Uses new endpoint and token authentication for Central Publisher Portal
+      - name: Deploy to Maven Central Publisher Portal (derive GAV from POM, attach signatures and Sigstore bundles)
         env:
-          SONATYPE_USERNAME: ${{ secrets.SONATYPE_USERNAME }}
+          CENTRAL_PORTAL_TOKEN: ${{ secrets.CENTRAL_PORTAL_TOKEN }}
         run: |
           set -euo pipefail
           cd /tmp/artifacts
@@ -241,9 +264,6 @@ jobs:
           fi
 
           echo "Derived coordinates: ${GROUP_ID}:${ARTIFACT_ID}:${VERSION}"
-
-          OSSRH_STAGING_URL="https://ossrh-staging-api.central.sonatype.com/service/local/staging/deploy/maven2/"
-
           FILES_LIST="${MAIN_JAR},${SOURCES_JAR},${JAVADOC_JAR},${MAIN_JAR}.asc,${SOURCES_JAR}.asc,${JAVADOC_JAR}.asc,pom.xml,pom.xml.asc"
           CLASSIFIERS_LIST=",sources,javadoc,asc,asc,asc,pom,asc"
           TYPES_LIST="jar,jar,jar,asc,asc,asc,pom,asc"
@@ -276,7 +296,8 @@ jobs:
           echo "Types: ${TYPES_LIST}"
 
           mvn -B org.apache.maven.plugins:maven-deploy-plugin:3.0.0-M1:deploy-file \
-            -Durl="${OSSRH_STAGING_URL}" -DrepositoryId=ossrh \
+            -Durl="https://central.sonatype.org/publish/repository/maven" \
+            -DrepositoryId=central \
             -Dfile="${MAIN_JAR}" -DpomFile="pom.xml" \
             -Dfiles="${FILES_LIST}" -Dclassifiers="${CLASSIFIERS_LIST}" -Dtypes="${TYPES_LIST}" \
             --settings "$HOME/.m2/settings.xml"
