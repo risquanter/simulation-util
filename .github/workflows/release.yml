@@ -214,6 +214,22 @@ jobs:
         run: |
           set -euo pipefail
 
+          # Configure GPG agent for Maven's GPG plugin
+          cat > "$GNUPGHOME/gpg-agent.conf" << EOF
+          allow-loopback-pinentry
+          max-cache-ttl 7200
+          default-cache-ttl 7200
+          EOF
+
+          cat > "$GNUPGHOME/gpg.conf" << EOF
+          use-agent
+          pinentry-mode loopback
+          EOF
+
+          # Restart GPG agent with new config
+          gpgconf --kill gpg-agent || true
+          gpg-agent --daemon --allow-loopback-pinentry || true
+
           # Copy pre-built artifacts to target directory
           mkdir -p target
           cp /tmp/artifacts/*.jar target/
@@ -232,7 +248,10 @@ jobs:
             -DpomFile=pom.xml -Dpackaging=jar
 
           # Now deploy (will sign with GPG and upload to Central Portal)
-          mvn -B deploy -Prelease -DskipTests -Dmaven.install.skip=true --settings "$HOME/.m2/settings.xml"
+          # Pass GPG passphrase via Maven property
+          mvn -B deploy -DskipTests -Dmaven.install.skip=true \
+            -Dgpg.passphrase="${GPG_PASSPHRASE}" \
+            --settings "$HOME/.m2/settings.xml"
 
           echo "Deployment completed (staged)."
           echo "Open https://central.sonatype.com/ to inspect and publish the deployment."
