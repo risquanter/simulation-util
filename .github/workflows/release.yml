@@ -245,33 +245,15 @@ jobs:
           gpgconf --kill gpg-agent || true
           gpg-agent --daemon --allow-loopback-pinentry || true
 
-          # Copy pre-built artifacts to target directory
-          mkdir -p target
-          cp /tmp/artifacts/*.jar target/
-          cp /tmp/artifacts/pom.xml . || true
-          cp /tmp/artifacts/*.bundle target/ || true
-          cp /tmp/artifacts/*.sig target/ || true
-          cp /tmp/artifacts/*.cert target/ || true
+          # Keep pre-built artifacts in /tmp/artifacts (DO NOT copy to workspace)
+          echo "Pre-built artifacts are in /tmp/artifacts (preserved for reference)"
+          ls -lh /tmp/artifacts/*.jar
 
-          # Find the main JAR (without -sources or -javadoc)
-          MAIN_JAR=$(ls target/*.jar | grep -v '\-sources\|\-javadoc' | head -1)
+          # Let Maven do a clean build from source
+          echo "Running clean Maven deploy from source..."
 
-          echo "Main JAR to install: $MAIN_JAR"
-          echo "Using settings.xml from: $HOME/.m2/settings.xml"
-
-          # Verify settings.xml exists
-          if [ ! -f "$HOME/.m2/settings.xml" ]; then
-            echo "ERROR: settings.xml not found at $HOME/.m2/settings.xml"
-            exit 1
-          fi
-
-          # Install pre-built artifacts to local Maven repo
-          mvn -B -ntp install:install-file -Dfile="$MAIN_JAR" \
-            -DpomFile=pom.xml -Dpackaging=jar
-
-          # Now deploy (will sign with GPG and upload to Central Portal)
-          # Use -s flag instead of --settings for better compatibility
-          mvn -B -ntp deploy -DskipTests -Dmaven.install.skip=true \
+          # Now deploy (Maven will build from scratch and sign with GPG)
+          mvn -B -ntp clean deploy -DskipTests \
             -Dgpg.passphrase="${GPG_PASSPHRASE}" \
             -s "$HOME/.m2/settings.xml"
 
