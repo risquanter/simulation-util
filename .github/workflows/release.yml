@@ -222,10 +222,12 @@ jobs:
           git config --global url."https://${GITHUB_TOKEN}@github.com/".insteadOf "https://github.com/"
 
           # Construct a release tag using short SHA
+          git fetch --all --tags
+          git checkout $GITHUB_SHA
           RELEASE_TAG="v${GITHUB_SHA:0:8}"
 
           # Create a GPG-signed tag non-interactively using the imported key
-          git tag -s "$RELEASE_TAG" -m "Release $RELEASE_TAG" --local-user "$GPG_KEYID" --no-verify || true
+          git tag -s "$RELEASE_TAG" -m "Release $RELEASE_TAG" --local-user "$GPG_KEYID" || true
 
           # Push the tag using authenticated git
           git push origin "$RELEASE_TAG"
