@@ -290,9 +290,9 @@ jobs:
           fi
 
           echo "Derived coordinates: ${GROUP_ID}:${ARTIFACT_ID}:${VERSION}"
-          FILES_LIST="${MAIN_JAR},${SOURCES_JAR},${JAVADOC_JAR},${MAIN_JAR}.asc,${SOURCES_JAR}.asc,${JAVADOC_JAR}.asc,pom.xml,pom.xml.asc"
-          CLASSIFIERS_LIST=",sources,javadoc,asc,asc,asc,pom,asc"
-          TYPES_LIST="jar,jar,jar,asc,asc,asc,pom,asc"
+          FILES_LIST="${SOURCES_JAR},${JAVADOC_JAR},${MAIN_JAR}.asc,${SOURCES_JAR}.asc,${JAVADOC_JAR}.asc,pom.xml,pom.xml.asc"
+          CLASSIFIERS_LIST="sources,javadoc,asc,asc,asc,pom,asc"
+          TYPES_LIST="jar,jar,asc,asc,asc,pom,asc"
 
           # Attach any Sigstore provenance files if present (experimental)
           if ls *.bundle >/dev/null 2>&1; then
