@@ -106,11 +106,25 @@ jobs:
           cd /tmp/artifacts
           sha256sum -c checksums.sha256
 
-      - name: (Optional) Verify Sigstore provenance presence
+    # - name: (Optional) Listing Sigstore provenance files
+    #   run: |
+    #     for s in /tmp/artifacts/*.bundle /tmp/artifacts/*.sigstore.json; do
+    #       [ -f "$s" ] && echo "Found provenance: $s"
+    #     done
+
+
+    # No verification of Sigstore provenance is done here;
+    # users can verify signatures after download.
+    # Sigstore provenance is attached during deployment below.
+      - name: (Optional) List Sigstore provenance files
         run: |
-          for s in /tmp/artifacts/*.bundle /tmp/artifacts/*.sigstore.json; do
-            [ -f "$s" ] && echo "Found provenance: $s"
-          done
+          shopt -s nullglob
+          echo "Sigstore provenance files:"
+          ls -lh /tmp/artifacts/*.bundle 2>/dev/null || echo "No .bundle files found"
+          echo "Sigstore signature files:"
+          ls -lh /tmp/artifacts/*.sig 2>/dev/null || echo "No .sig files found"
+          echo "Sigstore certificate files:"
+          ls -lh /tmp/artifacts/*.cert 2>/dev/null || echo "No .cert files found"
 
       - name: Import encrypted GPG private-subkey into ephemeral GNUPGHOME
         env:
