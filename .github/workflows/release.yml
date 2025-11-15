@@ -59,6 +59,10 @@ jobs:
     needs: verify-authorization
     runs-on: ubuntu-latest
     environment: release
+    permissions:
+      contents: write
+      id-token: write
+      actions: read
 
     env:
       ARTIFACT_RUN_ID: ${{ inputs.run_id }}
