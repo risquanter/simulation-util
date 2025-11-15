@@ -200,6 +200,21 @@ jobs:
           EOF
           chmod 600 "$HOME/.m2/settings.xml"
 
+          # Verify settings.xml was created successfully
+          echo "======================================"
+          echo "Settings.xml verification:"
+          echo "======================================"
+          if [ -f "$HOME/.m2/settings.xml" ]; then
+            echo "✅ settings.xml exists at: $HOME/.m2/settings.xml"
+            echo "File size: $(stat -f%z "$HOME/.m2/settings.xml" 2>/dev/null || stat -c%s "$HOME/.m2/settings.xml")"
+            echo "Server ID check:"
+            grep -q '<id>central</id>' "$HOME/.m2/settings.xml" && echo "✅ Server 'central' configured" || echo "❌ Server 'central' NOT found"
+          else
+            echo "❌ ERROR: settings.xml was not created!"
+            exit 1
+          fi
+          echo "======================================"
+
       - name: Set up Java
         uses: actions/setup-java@v4
         with:
@@ -251,12 +266,12 @@ jobs:
           fi
 
           # Install pre-built artifacts to local Maven repo
-          mvn -B install:install-file -Dfile="$MAIN_JAR" \
+          mvn -B -ntp install:install-file -Dfile="$MAIN_JAR" \
             -DpomFile=pom.xml -Dpackaging=jar
 
           # Now deploy (will sign with GPG and upload to Central Portal)
           # Use -s flag instead of --settings for better compatibility
-          mvn -B deploy -DskipTests -Dmaven.install.skip=true \
+          mvn -B -ntp deploy -DskipTests -Dmaven.install.skip=true \
             -Dgpg.passphrase="${GPG_PASSPHRASE}" \
             -s "$HOME/.m2/settings.xml"
 
