@@ -242,16 +242,23 @@ jobs:
           MAIN_JAR=$(ls target/*.jar | grep -v '\-sources\|\-javadoc' | head -1)
 
           echo "Main JAR to install: $MAIN_JAR"
+          echo "Using settings.xml from: $HOME/.m2/settings.xml"
+
+          # Verify settings.xml exists
+          if [ ! -f "$HOME/.m2/settings.xml" ]; then
+            echo "ERROR: settings.xml not found at $HOME/.m2/settings.xml"
+            exit 1
+          fi
 
           # Install pre-built artifacts to local Maven repo
           mvn -B install:install-file -Dfile="$MAIN_JAR" \
             -DpomFile=pom.xml -Dpackaging=jar
 
           # Now deploy (will sign with GPG and upload to Central Portal)
-          # Pass GPG passphrase via Maven property
+          # Use -s flag instead of --settings for better compatibility
           mvn -B deploy -DskipTests -Dmaven.install.skip=true \
             -Dgpg.passphrase="${GPG_PASSPHRASE}" \
-            --settings "$HOME/.m2/settings.xml"
+            -s "$HOME/.m2/settings.xml"
 
           echo "Deployment completed (staged)."
           echo "Open https://central.sonatype.com/ to inspect and publish the deployment."
