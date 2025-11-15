@@ -184,19 +184,28 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -euo pipefail
+          
           # Configure git for tagging and authentication
           git config --global user.email "ci@risquanter.example"
           git config --global user.name "Release Bot"
           git config --global url."https://${GITHUB_TOKEN}@github.com/".insteadOf "https://github.com/"
-
+          
+          # Configure GPG agent to allow loopback pinentry for git
+          echo "allow-loopback-pinentry" >> "$GNUPGHOME/gpg-agent.conf"
+          echo "pinentry-mode loopback" >> "$GNUPGHOME/gpg.conf"
+          gpgconf --kill gpg-agent || true
+          
           # Construct a release tag using short SHA
           git fetch --all --tags
           git checkout $GITHUB_SHA
           RELEASE_TAG="v${GITHUB_SHA:0:8}"
-
+          
           # Create a GPG-signed tag non-interactively using the imported key
-          git tag -s "$RELEASE_TAG" -m "Release $RELEASE_TAG" --local-user "$GPG_KEYID" || true
-
+          # Export passphrase for git's GPG subprocess
+          export GPG_TTY=$(tty) || true
+          echo "$GPG_PASSPHRASE" | git tag -s "$RELEASE_TAG" -m "Release $RELEASE_TAG" \
+            --local-user "$GPG_KEYID" --cleanup=verbatim || true
+          
           # Push the tag using authenticated git
           git push origin "$RELEASE_TAG"
 
