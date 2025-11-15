@@ -176,38 +176,6 @@ jobs:
           echo "Imported encrypted GPG subkey into ephemeral GNUPGHOME and removed plaintext."
 
 
-      - name: Sign artifacts and POM non-interactively with GPG key from secrets
-        env:
-          GNUPGHOME: ${{ env.GNUPGHOME }}
-          GPG_KEYID: ${{ env.GPG_KEYID }}
-          GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
-        run: |
-          set -euo pipefail
-          cd /tmp/artifacts
-
-          # Use loopback pinentry to supply passphrase non-interactively
-          for a in *.jar; do
-            echo "Signing $a with GPG key $GPG_KEYID..."
-            gpg --batch --yes --pinentry-mode loopback --passphrase "${GPG_PASSPHRASE}" \
-              --local-user "${GPG_KEYID}" --detach-sign --armor --output "${a}.asc" "$a"
-
-            # Metadata to help auditing which key/runner produced the signature
-            echo "Signature created by key: ${GPG_KEYID}" > "${a}.keyinfo"
-            echo "Timestamp: $(date -u)" >> "${a}.keyinfo"
-            echo "Workflow: $GITHUB_WORKFLOW" >> "${a}.keyinfo"
-            echo "Run ID: $GITHUB_RUN_ID" >> "${a}.keyinfo"
-          done
-
-          # Sign POM so Sonatype receives pom.xml.asc
-          if [ -f pom.xml ]; then
-            echo "Signing pom.xml with GPG key $GPG_KEYID..."
-            gpg --batch --yes --pinentry-mode loopback --passphrase "${GPG_PASSPHRASE}" \
-              --local-user "${GPG_KEYID}" --detach-sign --armor --output "pom.xml.asc" pom.xml
-          else
-            echo "Missing pom.xml in /tmp/artifacts; aborting"
-            exit 1
-          fi
-
       - name: Create signed git tag (GPG)
         env:
           GNUPGHOME: ${{ env.GNUPGHOME }}
@@ -254,82 +222,37 @@ jobs:
           EOF
           chmod 600 "$HOME/.m2/settings.xml"
 
-      # Deploy to Maven Central Publisher Portal (derive GAV from POM, attach signatures and Sigstore bundles)
-      # Uses new endpoint and token authentication for Central Publisher Portal
-      - name: Deploy to Maven Central Publisher Portal (derive GAV from POM, attach signatures and Sigstore bundles)
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Deploy to Maven Central Publisher Portal
         env:
-          CENTRAL_PORTAL_TOKEN: ${{ secrets.CENTRAL_PORTAL_TOKEN }}
+          GNUPGHOME: ${{ env.GNUPGHOME }}
+          GPG_KEYID: ${{ env.GPG_KEYID }}
+          GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
         run: |
           set -euo pipefail
-          cd /tmp/artifacts
 
-          MAIN_JAR=$(ls *.jar | grep -v -- "-sources.jar\|-javadoc.jar" | head -1)
-          SOURCES_JAR=$(ls *-sources.jar | head -1)
-          JAVADOC_JAR=$(ls *-javadoc.jar | head -1)
+          # Copy pre-built artifacts to target directory
+          mkdir -p target
+          cp /tmp/artifacts/*.jar target/
+          cp /tmp/artifacts/*.bundle target/ || true
+          cp /tmp/artifacts/*.sig target/ || true
+          cp /tmp/artifacts/*.cert target/ || true
 
-          if [ -z "$MAIN_JAR" ] || [ -z "$SOURCES_JAR" ] || [ -z "$JAVADOC_JAR" ]; then
-            echo "Error: Missing required JAR files"
-            exit 1
-          fi
+          # Install pre-built artifacts to local Maven repo, then deploy
+          # Maven will GPG-sign them and the central-publishing-maven-plugin will upload
+          mvn -B install:install-file -Dfile=target/$(ls target/*.jar | grep -v '\-sources\|\-javadoc' | head -1) \
+            -DpomFile=pom.xml -Dpackaging=jar
 
-          # Derive GAV from pom.xml (xmlstarlet)
-          NS="http://maven.apache.org/POM/4.0.0"
-          GROUP_ID=$(xmlstarlet sel -N x="$NS" -t -v "string(/x:project/x:groupId)" pom.xml)
-          if [ -z "$GROUP_ID" ]; then
-            GROUP_ID=$(xmlstarlet sel -N x="$NS" -t -v "string(/x:project/x:parent/x:groupId)" pom.xml)
-          fi
-          ARTIFACT_ID=$(xmlstarlet sel -N x="$NS" -t -v "string(/x:project/x:artifactId)" pom.xml)
-          VERSION=$(xmlstarlet sel -N x="$NS" -t -v "string(/x:project/x:version)" pom.xml)
-          if [ -z "$VERSION" ]; then
-            VERSION=$(xmlstarlet sel -N x="$NS" -t -v "string(/x:project/x:parent/x:version)" pom.xml)
-          fi
-
-          if [ -z "$GROUP_ID" ] || [ -z "$ARTIFACT_ID" ] || [ -z "$VERSION" ]; then
-            echo "Failed to derive groupId/artifactId/version from pom.xml"
-            exit 1
-          fi
-
-          echo "Derived coordinates: ${GROUP_ID}:${ARTIFACT_ID}:${VERSION}"
-          FILES_LIST="${SOURCES_JAR},${JAVADOC_JAR},${MAIN_JAR}.asc,${SOURCES_JAR}.asc,${JAVADOC_JAR}.asc,pom.xml,pom.xml.asc"
-          CLASSIFIERS_LIST="sources,javadoc,asc,asc,asc,pom,asc"
-          TYPES_LIST="jar,jar,asc,asc,asc,pom,asc"
-
-          # Attach any Sigstore provenance files if present (experimental)
-          if ls *.bundle >/dev/null 2>&1; then
-            for b in *.bundle; do
-              FILES_LIST="${FILES_LIST},${b}"
-              CLASSIFIERS_LIST="${CLASSIFIERS_LIST},sigstore"
-              TYPES_LIST="${TYPES_LIST},sig"
-            done
-          fi
-          if ls *.cert >/dev/null 2>&1; then
-            for c in *.cert; do
-              FILES_LIST="${FILES_LIST},${c}"
-              CLASSIFIERS_LIST="${CLASSIFIERS_LIST},sigstore-cert"
-              TYPES_LIST="${TYPES_LIST},cert"
-            done
-          fi
-          if ls *.sig >/dev/null 2>&1; then
-            for s in *.sig; do
-              FILES_LIST="${FILES_LIST},${s}"
-              CLASSIFIERS_LIST="${CLASSIFIERS_LIST},sigstore-sig"
-              TYPES_LIST="${TYPES_LIST},sig"
-            done
-          fi
-
-          echo "Files to deploy: ${FILES_LIST}"
-          echo "Classifiers: ${CLASSIFIERS_LIST}"
-          echo "Types: ${TYPES_LIST}"
-
-          mvn -B org.apache.maven.plugins:maven-deploy-plugin:3.0.0-M1:deploy-file \
-            -Durl="https://central.sonatype.org/publish/repository/maven" \
-            -DrepositoryId=central \
-            -Dfile="${MAIN_JAR}" -DpomFile="pom.xml" \
-            -Dfiles="${FILES_LIST}" -Dclassifiers="${CLASSIFIERS_LIST}" -Dtypes="${TYPES_LIST}" \
-            --settings "$HOME/.m2/settings.xml"
+          # Now deploy (will sign with GPG and upload to Central Portal)
+          mvn -B deploy -DskipTests -Dmaven.install.skip=true --settings "$HOME/.m2/settings.xml"
 
           echo "Deployment completed (staged)."
-          echo "Open https://central.sonatype.com/ to inspect the created staging repository and close it manually."
+          echo "Open https://central.sonatype.com/ to inspect and publish the deployment."
 
       - name: Clean up (always)
         if: always()
