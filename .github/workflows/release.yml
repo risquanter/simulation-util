@@ -217,17 +217,22 @@ jobs:
           # Copy pre-built artifacts to target directory
           mkdir -p target
           cp /tmp/artifacts/*.jar target/
+          cp /tmp/artifacts/pom.xml . || true
           cp /tmp/artifacts/*.bundle target/ || true
           cp /tmp/artifacts/*.sig target/ || true
           cp /tmp/artifacts/*.cert target/ || true
 
-          # Install pre-built artifacts to local Maven repo, then deploy
-          # Maven will GPG-sign them and the central-publishing-maven-plugin will upload
-          mvn -B install:install-file -Dfile=target/$(ls target/*.jar | grep -v '\-sources\|\-javadoc' | head -1) \
+          # Find the main JAR (without -sources or -javadoc)
+          MAIN_JAR=$(ls target/*.jar | grep -v '\-sources\|\-javadoc' | head -1)
+
+          echo "Main JAR to install: $MAIN_JAR"
+
+          # Install pre-built artifacts to local Maven repo
+          mvn -B install:install-file -Dfile="$MAIN_JAR" \
             -DpomFile=pom.xml -Dpackaging=jar
 
           # Now deploy (will sign with GPG and upload to Central Portal)
-          mvn -B deploy -DskipTests -Dmaven.install.skip=true --settings "$HOME/.m2/settings.xml"
+          mvn -B deploy -Prelease -DskipTests -Dmaven.install.skip=true --settings "$HOME/.m2/settings.xml"
 
           echo "Deployment completed (staged)."
           echo "Open https://central.sonatype.com/ to inspect and publish the deployment."
