@@ -220,6 +220,12 @@ public class Metalog {
         }
     }
 
+    /**
+     * Validates an array of percentile/probability values.
+     *
+     * @param p array of percentiles/probabilities to validate
+     * @throws IllegalArgumentException if any value is out of bounds
+     */
     public static void validateInputs(double[] p) {
         for (double v : p) {
             validateInputs(v);
