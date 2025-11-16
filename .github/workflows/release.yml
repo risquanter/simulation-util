@@ -237,6 +237,7 @@ jobs:
           distribution: temurin
           java-version: '21'
 
+          
       - name: Deploy to Maven Central Publisher Portal
         env:
           GNUPGHOME: ${{ env.GNUPGHOME }}
@@ -269,7 +270,29 @@ jobs:
           mvn -B -ntp clean verify -DskipTests \
             -Dgpg.passphrase="${GPG_PASSPHRASE}"
 
-          echo "Now explicitly running central-publishing:upload and central-publishing:publish..."
+          # Check for required artifacts in target/
+          echo "Checking for required artifacts in target/..."
+          cd target
+          REQUIRED_FILES=(
+            "simulation.util-*.jar"
+            "simulation.util-*-sources.jar"
+            "simulation.util-*-javadoc.jar"
+            "pom.xml.asc"
+            "simulation.util-*.jar.asc"
+            "simulation.util-*-sources.jar.asc"
+            "simulation.util-*-javadoc.jar.asc"
+          )
+          for pattern in "${REQUIRED_FILES[@]}"; do
+            if ! ls $pattern >/dev/null 2>&1; then
+              echo "❌ Missing required artifact: $pattern"
+              exit 1
+            else
+              echo "✅ Found: $pattern"
+            fi
+          done
+          cd ..
+
+          echo "Now explicitly running central-publishing:publish..."
 
           # Upload to Central Portal
           mvn -B -ntp central-publishing:publish \
