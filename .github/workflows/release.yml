@@ -278,9 +278,10 @@ jobs:
 
           # Build, sign artifacts, and publish in one command
           mvn -B -ntp clean verify central-publishing:publish -DskipTests \
-            --settings "$HOME/.m2/settings.xml" \
             -Dgpg.passphrase="${GPG_PASSPHRASE}" \
-            -DpublishingServerId=central          # Note: The publish goal stages the deployment
+            -DpublishingServerId=central
+
+          # Note: The publish goal stages the deployment
           # You must manually publish from https://central.sonatype.com/
 
           echo "Deployment completed (staged)."
