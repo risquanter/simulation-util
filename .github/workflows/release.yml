@@ -277,7 +277,7 @@ jobs:
           cp pom.xml.asc target/
 
           # Build and sign artifacts only (no deployment via plugin)
-          mvn -B -ntp clean verify -DskipTests \
+          mvn -B -ntp clean verify gpg:sign -DskipTests \
             -Dgpg.passphrase="${GPG_PASSPHRASE}"
 
           # Create deployment bundle for Maven Central
