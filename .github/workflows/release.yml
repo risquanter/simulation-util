@@ -198,12 +198,12 @@ jobs:
             </servers>
           </settings>
           EOF
-          
+
           # Replace placeholders with actual values
           sed -i "s/USERNAME_PLACEHOLDER/${CENTRAL_PORTAL_USERNAME}/g" "$HOME/.m2/settings.xml"
           sed -i "s/PASSWORD_PLACEHOLDER/${CENTRAL_PORTAL_TOKEN}/g" "$HOME/.m2/settings.xml"
           chmod 600 "$HOME/.m2/settings.xml"
-          
+
           # Verify
           echo "======================================"
           echo "Settings.xml verification:"
@@ -242,6 +242,8 @@ jobs:
           GNUPGHOME: ${{ env.GNUPGHOME }}
           GPG_KEYID: ${{ env.GPG_KEYID }}
           GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
+          CENTRAL_PORTAL_USERNAME: ${{ secrets.CENTRAL_PORTAL_USERNAME }}
+          CENTRAL_PORTAL_TOKEN: ${{ secrets.CENTRAL_PORTAL_TOKEN }}
         run: |
           set -euo pipefail
 
@@ -268,10 +270,12 @@ jobs:
           # Let Maven do a clean build from source
           echo "Running clean Maven deploy from source..."
 
-          # Now deploy (Maven will build from scratch and sign with GPG)
+          # Deploy with credentials passed as system properties
+          # This bypasses the settings.xml server resolution bug
           mvn -B -ntp clean deploy -DskipTests \
             -Dgpg.passphrase="${GPG_PASSPHRASE}" \
-            -s "$HOME/.m2/settings.xml"
+            -Dcentral.username="${CENTRAL_PORTAL_USERNAME}" \
+            -Dcentral.password="${CENTRAL_PORTAL_TOKEN}"
 
           echo "Deployment completed (staged)."
           echo "Open https://central.sonatype.com/ to inspect and publish the deployment."
