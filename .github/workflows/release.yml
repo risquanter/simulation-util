@@ -322,11 +322,11 @@ jobs:
 
           echo "Upload response: $UPLOAD_RESPONSE"
 
-          # Extract deployment ID from response
-          DEPLOYMENT_ID=$(echo "$UPLOAD_RESPONSE" | jq -r '.deploymentId')
+          # The response is the deployment ID directly (not JSON)
+          DEPLOYMENT_ID=$(echo "$UPLOAD_RESPONSE" | tr -d '[:space:]')
           echo "Deployment ID: $DEPLOYMENT_ID"
 
-          if [ "$DEPLOYMENT_ID" = "null" ] || [ -z "$DEPLOYMENT_ID" ]; then
+          if [ -z "$DEPLOYMENT_ID" ]; then
             echo "❌ Failed to get deployment ID"
             echo "Full response: $UPLOAD_RESPONSE"
             exit 1
