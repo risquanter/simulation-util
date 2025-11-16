@@ -280,7 +280,10 @@ jobs:
           echo "Creating deployment bundle with Maven repository layout..."
           BUNDLE_NAME="bundle.zip"
           BUNDLE_DIR="bundle_staging"
-          VERSION="0.6.1"
+
+          # Extract version from POM
+          VERSION=$(xmlstarlet sel -t -v "/_:project/_:version" pom.xml)
+          echo "Detected version: $VERSION"
 
           # Create the Maven repository structure
           mkdir -p "$BUNDLE_DIR/com/risquanter/simulation.util/$VERSION"
