@@ -279,7 +279,9 @@ jobs:
           # Build, sign artifacts, and publish in one command
           mvn -B -ntp clean verify central-publishing:publish -DskipTests \
             -Dgpg.passphrase="${GPG_PASSPHRASE}" \
-            -DpublishingServerId=central
+            -DpublishingServerId=central  \
+            -Dcentral.username="${CENTRAL_PORTAL_USERNAME}" \
+            -Dcentral.password="${CENTRAL_PORTAL_TOKEN}"
 
           # Note: The publish goal stages the deployment
           # You must manually publish from https://central.sonatype.com/
