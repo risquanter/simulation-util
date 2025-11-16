@@ -270,6 +270,15 @@ jobs:
           mvn -B -ntp clean verify -DskipTests \
             -Dgpg.passphrase="${GPG_PASSPHRASE}"
 
+          # Manually sign the POM file (maven-gpg-plugin doesn't do this automatically)
+          echo "Signing POM file..."
+          gpg --batch --yes --pinentry-mode loopback \
+            --passphrase "${GPG_PASSPHRASE}" \
+            --armor --detach-sign pom.xml
+
+          # Copy signed POM to target directory
+          cp pom.xml.asc target/
+
           # Check for required artifacts in target/
           echo "Checking for required artifacts in target/..."
           cd target

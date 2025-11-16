@@ -164,11 +164,15 @@
                                 <arg>--pinentry-mode</arg>
                                 <arg>loopback</arg>
                             </gpgArguments>
-                            <!-- Explicitly sign the POM file -->
-                            <pomFile>true</pomFile>
                         </configuration>
                     </execution>
                 </executions>
+                <configuration>
+                    <!-- Sign the POM file in addition to artifacts -->
+                    <excludes>
+                        <exclude>**/*.asc</exclude>
+                    </excludes>
+                </configuration>
             </plugin>
         </plugins>
     </build>
