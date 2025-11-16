@@ -188,7 +188,7 @@ jobs:
         run: |
           mkdir -p "$HOME/.m2"
           cat > "$HOME/.m2/settings.xml" << 'EOF'
-          <settings>
+          <settings xmlns="http://maven.apache.org/SETTINGS/1.0.0">
             <servers>
               <server>
                 <id>central</id>
