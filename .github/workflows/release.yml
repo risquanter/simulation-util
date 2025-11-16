@@ -311,8 +311,12 @@ jobs:
 
           # Upload to Central Portal using REST API
           echo "Uploading to Central Portal..."
+
+          # Calculate Bearer token: base64 encode username:password
+          BEARER_TOKEN=$(printf "%s:%s" "${CENTRAL_PORTAL_USERNAME}" "${CENTRAL_PORTAL_TOKEN}" | base64 -w 0)
+
           UPLOAD_RESPONSE=$(curl -X POST \
-            -H "Authorization: Bearer ${CENTRAL_PORTAL_TOKEN}" \
+            -H "Authorization: Bearer ${BEARER_TOKEN}" \
             -F "bundle=@target/$BUNDLE_NAME" \
             "https://central.sonatype.com/api/v1/publisher/upload?name=simulation.util-0.6.1&publishingType=USER_MANAGED")
 
@@ -331,12 +335,10 @@ jobs:
           # Check deployment status
           echo "Checking deployment status..."
           STATUS_RESPONSE=$(curl -X GET \
-            -H "Authorization: Bearer ${CENTRAL_PORTAL_TOKEN}" \
+            -H "Authorization: Bearer ${BEARER_TOKEN}" \
             "https://central.sonatype.com/api/v1/publisher/deployment/$DEPLOYMENT_ID")
 
-          echo "Deployment status: $STATUS_RESPONSE"
-
-          # Note: The publish goal stages the deployment
+          echo "Deployment status: $STATUS_RESPONSE"          # Note: The publish goal stages the deployment
           # You must manually publish from https://central.sonatype.com/
 
           echo "Deployment completed (staged)."
