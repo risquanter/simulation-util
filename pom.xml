@@ -164,6 +164,8 @@
                                 <arg>--pinentry-mode</arg>
                                 <arg>loopback</arg>
                             </gpgArguments>
+                            <!-- Explicitly sign the POM file -->
+                            <pomFile>true</pomFile>
                         </configuration>
                     </execution>
                 </executions>

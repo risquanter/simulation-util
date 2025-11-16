@@ -268,8 +268,7 @@ jobs:
 
           # Build and sign artifacts WITHOUT deploying
           mvn -B -ntp clean verify -DskipTests \
-            -Dgpg.passphrase="${GPG_PASSPHRASE}" \
-            -Dgpg.signPom=true
+            -Dgpg.passphrase="${GPG_PASSPHRASE}"
 
           # Check for required artifacts in target/
           echo "Checking for required artifacts in target/..."
