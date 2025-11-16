@@ -300,6 +300,17 @@ jobs:
           cp pom.xml "$BUNDLE_DIR/com/risquanter/simulation.util/$VERSION/simulation.util-$VERSION.pom"
           cp pom.xml.asc "$BUNDLE_DIR/com/risquanter/simulation.util/$VERSION/simulation.util-$VERSION.pom.asc"
 
+          # Generate MD5 and SHA1 checksums for all artifacts
+          echo "Generating checksums..."
+          cd "$BUNDLE_DIR/com/risquanter/simulation.util/$VERSION"
+
+          for file in simulation.util-$VERSION.jar simulation.util-$VERSION-sources.jar simulation.util-$VERSION-javadoc.jar simulation.util-$VERSION.pom; do
+            md5sum "$file" | awk '{print $1}' > "$file.md5"
+            sha1sum "$file" | awk '{print $1}' > "$file.sha1"
+          done
+
+          cd -
+
           # Create the ZIP bundle from the staging directory
           cd "$BUNDLE_DIR"
           zip -r "../target/$BUNDLE_NAME" .
