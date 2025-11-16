@@ -187,26 +187,30 @@ jobs:
           CENTRAL_PORTAL_TOKEN: ${{ secrets.CENTRAL_PORTAL_TOKEN }}
         run: |
           mkdir -p "$HOME/.m2"
-          cat > "$HOME/.m2/settings.xml" << EOF
+          cat > "$HOME/.m2/settings.xml" << 'EOF'
           <settings>
             <servers>
               <server>
                 <id>central</id>
-                <username>${CENTRAL_PORTAL_USERNAME}</username>
-                <password>${CENTRAL_PORTAL_TOKEN}</password>
+                <username>USERNAME_PLACEHOLDER</username>
+                <password>PASSWORD_PLACEHOLDER</password>
               </server>
             </servers>
           </settings>
           EOF
+          
+          # Replace placeholders with actual values
+          sed -i "s/USERNAME_PLACEHOLDER/${CENTRAL_PORTAL_USERNAME}/g" "$HOME/.m2/settings.xml"
+          sed -i "s/PASSWORD_PLACEHOLDER/${CENTRAL_PORTAL_TOKEN}/g" "$HOME/.m2/settings.xml"
           chmod 600 "$HOME/.m2/settings.xml"
-
-          # Verify settings.xml was created successfully
+          
+          # Verify
           echo "======================================"
           echo "Settings.xml verification:"
           echo "======================================"
           if [ -f "$HOME/.m2/settings.xml" ]; then
             echo "✅ settings.xml exists at: $HOME/.m2/settings.xml"
-            echo "File size: $(stat -f%z "$HOME/.m2/settings.xml" 2>/dev/null || stat -c%s "$HOME/.m2/settings.xml")"
+            echo "File size: $(stat -c%s "$HOME/.m2/settings.xml")"
             echo "Server ID check:"
             grep -q '<id>central</id>' "$HOME/.m2/settings.xml" && echo "✅ Server 'central' configured" || echo "❌ Server 'central' NOT found"
           else
@@ -214,6 +218,18 @@ jobs:
             exit 1
           fi
           echo "======================================"
+
+      - name: Debug Maven settings
+        run: |
+          echo "======================================"
+          echo "Maven settings debug:"
+          echo "======================================"
+          echo "HOME: $HOME"
+          echo "Contents of $HOME/.m2/settings.xml:"
+          cat "$HOME/.m2/settings.xml"
+          echo ""
+          echo "Running mvn help:effective-settings to see what Maven sees:"
+          mvn help:effective-settings -s "$HOME/.m2/settings.xml"
 
       - name: Set up Java
         uses: actions/setup-java@v4
