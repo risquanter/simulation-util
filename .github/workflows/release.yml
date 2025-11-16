@@ -272,8 +272,10 @@ jobs:
           echo "Now explicitly running central-publishing:upload and central-publishing:publish..."
 
           # Upload to Central Portal
-          mvn -B -ntp central-publishing:upload \
-            -s "$HOME/.m2/settings.xml"
+          mvn -B -ntp central-publishing:publish \
+            --settings "$HOME/.m2/settings.xml" \
+            -Dgpg.passphrase="${GPG_PASSPHRASE}" \
+            -DpublishingServerId=central
 
           # Note: The publish goal stages the deployment
           # You must manually publish from https://central.sonatype.com/
