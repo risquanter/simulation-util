@@ -264,7 +264,7 @@ jobs:
           gpgconf --kill gpg-agent || true
           gpg-agent --daemon --allow-loopback-pinentry || true
 
-          echo "Running Maven build, sign, and publish..."
+          echo "Running Maven build and sign..."
 
           # Manually sign the POM file first (maven-gpg-plugin doesn't do this automatically)
           echo "Signing POM file..."
@@ -276,11 +276,69 @@ jobs:
           mkdir -p target
           cp pom.xml.asc target/
 
-          # Build, sign artifacts, and deploy (central-publishing plugin hooks into deploy phase)
-          mvn -B -ntp clean deploy -DskipTests \
-            -Dgpg.passphrase="${GPG_PASSPHRASE}"  \
-            -Dcentral.username="${CENTRAL_PORTAL_USERNAME}" \
-            -Dcentral.password="${CENTRAL_PORTAL_TOKEN}"
+          # Build and sign artifacts only (no deployment via plugin)
+          mvn -B -ntp clean verify -DskipTests \
+            -Dgpg.passphrase="${GPG_PASSPHRASE}"
+
+          # Create deployment bundle for Maven Central
+          echo "Creating deployment bundle with Maven repository layout..."
+          BUNDLE_NAME="bundle.zip"
+          BUNDLE_DIR="bundle_staging"
+          VERSION="0.6.1"
+
+          # Create the Maven repository structure
+          mkdir -p "$BUNDLE_DIR/com/risquanter/simulation.util/$VERSION"
+
+          # Copy all artifacts to the proper directory structure
+          cp target/simulation.util-$VERSION.jar "$BUNDLE_DIR/com/risquanter/simulation.util/$VERSION/"
+          cp target/simulation.util-$VERSION.jar.asc "$BUNDLE_DIR/com/risquanter/simulation.util/$VERSION/"
+          cp target/simulation.util-$VERSION-sources.jar "$BUNDLE_DIR/com/risquanter/simulation.util/$VERSION/"
+          cp target/simulation.util-$VERSION-sources.jar.asc "$BUNDLE_DIR/com/risquanter/simulation.util/$VERSION/"
+          cp target/simulation.util-$VERSION-javadoc.jar "$BUNDLE_DIR/com/risquanter/simulation.util/$VERSION/"
+          cp target/simulation.util-$VERSION-javadoc.jar.asc "$BUNDLE_DIR/com/risquanter/simulation.util/$VERSION/"
+
+          # Copy POM and its signature with proper naming
+          cp pom.xml "$BUNDLE_DIR/com/risquanter/simulation.util/$VERSION/simulation.util-$VERSION.pom"
+          cp target/pom.xml.asc "$BUNDLE_DIR/com/risquanter/simulation.util/$VERSION/simulation.util-$VERSION.pom.asc"
+
+          # Create the ZIP bundle from the staging directory
+          cd "$BUNDLE_DIR"
+          zip -r "../target/$BUNDLE_NAME" .
+          cd ..
+
+          echo "Bundle created: target/$BUNDLE_NAME"
+          echo "Bundle structure:"
+          unzip -l target/"$BUNDLE_NAME"
+
+          # Clean up staging directory
+          rm -rf "$BUNDLE_DIR"
+
+          # Upload to Central Portal using REST API
+          echo "Uploading to Central Portal..."
+          UPLOAD_RESPONSE=$(curl -X POST \
+            -H "Authorization: Bearer ${CENTRAL_PORTAL_TOKEN}" \
+            -F "bundle=@target/$BUNDLE_NAME" \
+            "https://central.sonatype.com/api/v1/publisher/upload?name=simulation.util-0.6.1&publishingType=USER_MANAGED")
+
+          echo "Upload response: $UPLOAD_RESPONSE"
+
+          # Extract deployment ID from response
+          DEPLOYMENT_ID=$(echo "$UPLOAD_RESPONSE" | jq -r '.deploymentId')
+          echo "Deployment ID: $DEPLOYMENT_ID"
+
+          if [ "$DEPLOYMENT_ID" = "null" ] || [ -z "$DEPLOYMENT_ID" ]; then
+            echo "❌ Failed to get deployment ID"
+            echo "Full response: $UPLOAD_RESPONSE"
+            exit 1
+          fi
+
+          # Check deployment status
+          echo "Checking deployment status..."
+          STATUS_RESPONSE=$(curl -X GET \
+            -H "Authorization: Bearer ${CENTRAL_PORTAL_TOKEN}" \
+            "https://central.sonatype.com/api/v1/publisher/deployment/$DEPLOYMENT_ID")
+
+          echo "Deployment status: $STATUS_RESPONSE"
 
           # Note: The publish goal stages the deployment
           # You must manually publish from https://central.sonatype.com/
