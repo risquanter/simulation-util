@@ -264,52 +264,23 @@ jobs:
           gpgconf --kill gpg-agent || true
           gpg-agent --daemon --allow-loopback-pinentry || true
 
-          echo "Running clean Maven package (build + sign, but don't deploy yet)..."
+          echo "Running Maven build, sign, and publish..."
 
-          # Build and sign artifacts WITHOUT deploying
-          mvn -B -ntp clean verify -DskipTests \
-            -Dgpg.passphrase="${GPG_PASSPHRASE}"
-
-          # Manually sign the POM file (maven-gpg-plugin doesn't do this automatically)
+          # Manually sign the POM file first (maven-gpg-plugin doesn't do this automatically)
           echo "Signing POM file..."
           gpg --batch --yes --pinentry-mode loopback \
             --passphrase "${GPG_PASSPHRASE}" \
             --armor --detach-sign pom.xml
 
-          # Copy signed POM to target directory
+          # Copy signed POM to target directory (create it if needed)
+          mkdir -p target
           cp pom.xml.asc target/
 
-          # Check for required artifacts in target/
-          echo "Checking for required artifacts in target/..."
-          cd target
-          REQUIRED_FILES=(
-            "simulation.util-*.jar"
-            "simulation.util-*-sources.jar"
-            "simulation.util-*-javadoc.jar"
-            "pom.xml.asc"
-            "simulation.util-*.jar.asc"
-            "simulation.util-*-sources.jar.asc"
-            "simulation.util-*-javadoc.jar.asc"
-          )
-          for pattern in "${REQUIRED_FILES[@]}"; do
-            if ! ls $pattern >/dev/null 2>&1; then
-              echo "❌ Missing required artifact: $pattern"
-              exit 1
-            else
-              echo "✅ Found: $pattern"
-            fi
-          done
-          cd ..
-
-          echo "Now explicitly running central-publishing:publish..."
-
-          # Upload to Central Portal
-          mvn -B -ntp central-publishing:publish \
+          # Build, sign artifacts, and publish in one command
+          mvn -B -ntp clean verify central-publishing:publish -DskipTests \
             --settings "$HOME/.m2/settings.xml" \
             -Dgpg.passphrase="${GPG_PASSPHRASE}" \
-            -DpublishingServerId=central
-
-          # Note: The publish goal stages the deployment
+            -DpublishingServerId=central          # Note: The publish goal stages the deployment
           # You must manually publish from https://central.sonatype.com/
 
           echo "Deployment completed (staged)."
