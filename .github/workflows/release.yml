@@ -266,19 +266,15 @@ jobs:
 
           echo "Running Maven build and sign..."
 
-          # Manually sign the POM file first (maven-gpg-plugin doesn't do this automatically)
+          # Build and sign artifacts only (no deployment via plugin)
+          mvn -B -ntp clean verify -DskipTests \
+            -Dgpg.passphrase="${GPG_PASSPHRASE}"
+
+          # Manually sign the POM file after build (maven-gpg-plugin doesn't do this automatically)
           echo "Signing POM file..."
           gpg --batch --yes --pinentry-mode loopback \
             --passphrase "${GPG_PASSPHRASE}" \
             --armor --detach-sign pom.xml
-
-          # Copy signed POM to target directory (create it if needed)
-          mkdir -p target
-          cp pom.xml.asc target/
-
-          # Build and sign artifacts only (no deployment via plugin)
-          mvn -B -ntp clean verify gpg:sign -DskipTests \
-            -Dgpg.passphrase="${GPG_PASSPHRASE}"
 
           # Create deployment bundle for Maven Central
           echo "Creating deployment bundle with Maven repository layout..."
@@ -299,7 +295,7 @@ jobs:
 
           # Copy POM and its signature with proper naming
           cp pom.xml "$BUNDLE_DIR/com/risquanter/simulation.util/$VERSION/simulation.util-$VERSION.pom"
-          cp target/pom.xml.asc "$BUNDLE_DIR/com/risquanter/simulation.util/$VERSION/simulation.util-$VERSION.pom.asc"
+          cp pom.xml.asc "$BUNDLE_DIR/com/risquanter/simulation.util/$VERSION/simulation.util-$VERSION.pom.asc"
 
           # Create the ZIP bundle from the staging directory
           cd "$BUNDLE_DIR"
