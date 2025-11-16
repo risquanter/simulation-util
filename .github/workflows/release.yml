@@ -263,19 +263,20 @@ jobs:
           gpgconf --kill gpg-agent || true
           gpg-agent --daemon --allow-loopback-pinentry || true
 
-          # Keep pre-built artifacts in /tmp/artifacts (DO NOT copy to workspace)
-          echo "Pre-built artifacts are in /tmp/artifacts (preserved for reference)"
-          ls -lh /tmp/artifacts/*.jar
+          echo "Running clean Maven package (build + sign, but don't deploy yet)..."
 
-          # Let Maven do a clean build from source
-          echo "Running clean Maven deploy from source..."
+          # Build and sign artifacts WITHOUT deploying
+          mvn -B -ntp clean verify -DskipTests \
+            -Dgpg.passphrase="${GPG_PASSPHRASE}"
 
-          # Deploy with credentials passed as system properties
-          # This bypasses the settings.xml server resolution bug
-          mvn -B -ntp clean deploy -DskipTests \
-            -Dgpg.passphrase="${GPG_PASSPHRASE}" \
-            -Dcentral.username="${CENTRAL_PORTAL_USERNAME}" \
-            -Dcentral.password="${CENTRAL_PORTAL_TOKEN}"
+          echo "Now explicitly running central-publishing:upload and central-publishing:publish..."
+
+          # Upload to Central Portal
+          mvn -B -ntp central-publishing:upload \
+            -s "$HOME/.m2/settings.xml"
+
+          # Note: The publish goal stages the deployment
+          # You must manually publish from https://central.sonatype.com/
 
           echo "Deployment completed (staged)."
           echo "Open https://central.sonatype.com/ to inspect and publish the deployment."
