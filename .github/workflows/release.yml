@@ -348,9 +348,10 @@ jobs:
 
           # Check deployment status
           echo "Checking deployment status..."
-          STATUS_RESPONSE=$(curl -X GET \
-            -H "Authorization: Bearer ${BEARER_TOKEN}" \
-            "https://central.sonatype.com/api/v1/publisher/deployment/$DEPLOYMENT_ID")
+          STATUS_RESPONSE=$(
+          curl -X POST "https://central.sonatype.com/api/v1/publisher/status?id=$DEPLOYMENT_ID" \
+            -H "Authorization: Bearer ${BEARER_TOKEN}" -H "Content-Type: application/json"
+            )
 
           echo "Deployment status: $STATUS_RESPONSE"          # Note: The publish goal stages the deployment
           # You must manually publish from https://central.sonatype.com/
