@@ -10,7 +10,9 @@ This library offers the following functionality:
 - `Metalog` class for quantile and PDF evaluation
 - `QPFitter` class to fit a Metalog distribution via quadratic programming (QP) using the Ojalgo library
 
-The implementation follows the referenced paper for quantile and PDF evaluation. Instead of ordinary least squares (OLS), the current version uses a quadratic programming (QP) approach for fitting, with a linear constraint on the probabilities.
+The implementation follows the referenced paper for quantile and PDF evaluation.
+
+Instead of ordinary least squares (OLS), the current version uses a quadratic programming (QP) approach for fitting, with convex feasibility constraints (such as monotonicity and bounds) on the coefficients. This is motivated by Keelin’s proof that the set of feasible Metalog coefficients is convex, making convex optimization (QP) both robust and theoretically justified for Metalog fitting.
 
 # Usage
 
