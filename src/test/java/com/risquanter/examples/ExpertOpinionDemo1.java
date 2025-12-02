@@ -84,6 +84,7 @@ public class ExpertOpinionDemo1 {
         System.out.println("Results written to: " + outputFilename);
 
         // 6) Verify that the bounded fit is pinned at the ends
+        System.out.println("Bounded Metalog Quantiles at the Anchors:");
         System.out.printf("Q(eps)    = %.12f%n", metalogBounded.quantile(EPS));
         System.out.printf("Q(1-eps)  = %.12f%n", metalogBounded.quantile(1 - EPS));
     }
