@@ -27,6 +27,11 @@ import static com.risquanter.examples.ExampleUtil.buildLabelJson;
  *   2) Fit a 3-term fully-bounded metalog with support [LS=3.0, US=10.0].
  *   3) Generate evenly-spaced p values in [0.05, 0.95] and emit JSON
  *      of { "quantile": Q(p), "p": p } for Vega-Lite CDF plotting.
+ *   4) Fill a Vega-Lite spec template with the generated data and write it to a test resource file.
+ *   5) Print the quantile values at the endpoints to verify the bounded fit.
+ *
+ * The output can be visualized by pasting it into the online Vega-Lite editor:
+ * https://vega.github.io/editor/#/examples/vega-lite/bar_chart
  */
 public class ExpertOpinionDemo2 {
     public static void main(String[] args) {

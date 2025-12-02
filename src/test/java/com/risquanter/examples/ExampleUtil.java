@@ -13,8 +13,8 @@ import com.risquanter.simulation.util.distribution.metalog.Metalog;
 
 public class ExampleUtil {
 
-    private static final int STEPS = 100; // prints p=0.00…1.00
-    private static final double EPS   = 1e-12;
+    private static final int STEPS = 100;
+    private static final double EPS = 1e-12;
 
     static String loadResourceAsString(String resourcePath) {
         InputStream in = ObservationalMetalogFitExample.class
@@ -42,10 +42,11 @@ public class ExampleUtil {
 
     /**
      * Dumps a full CDF trace from p=0.00 → p=1.00 by calling
-     * m.quantile(clamp(p, EPS, 1-EPS))
-     * for each step. This single method works for both bounded
-     * and unbounded Metalogs: it will result in exact flat caps
-     * when bounds are in force, and natural extrapolation otherwise.
+     * m.quantile(p), where p is clamped into (EPS, 1-EPS) for each step:
+     * double pForQ = Math.min(Math.max(p, EPS), 1.0 - EPS);
+     * This single method works for both bounded and unbounded Metalogs:
+     * it will result in exact flat caps when bounds are in force,
+     * and natural extrapolation otherwise.
      */
     static String buildFitJson(Metalog m) {
         StringBuilder sb = new StringBuilder();
@@ -72,10 +73,8 @@ public class ExampleUtil {
         File file = Paths.get("src", "test", "resources", filename).toFile();
 
         try {
-            // Ensure parent directories exist
             file.getParentFile().mkdirs();
 
-            // Write content to file (overwrite if exists)
             try (FileWriter writer = new FileWriter(file, false)) {
                 writer.write(content);
             }
@@ -83,7 +82,6 @@ public class ExampleUtil {
         } catch (IOException e) {
             System.err.println("❌ Failed to write Vega-Lite spec to file: " + file.getAbsolutePath());
             System.err.println("Reason: " + e.getMessage());
-            // Optionally rethrow or log more details
         }
     }
 

@@ -12,6 +12,30 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
+
+/**
+ * Example that builds a risk hierarchy of three independent risks (A, B, C),
+ * each modeled as a two-part distribution:
+ * <ul>
+ *   <li>A Bernoulli loss event with given probability of loss</li>
+ *   <li>A continuous tail loss modeled by a fitted Metalog distribution</li>
+ * </ul>
+ * <p>
+ * For each risk (A, B, C), there is a chance (probability pLoss) that an event occurs.
+ * If the event occurs, the loss amount is sampled from a lognormal distribution
+ * (approximated by a fitted Metalog). If the event does not occur, the loss is zero.
+ * The Monte Carlo loop implements this logic: for each simulation, it flips a coin
+ * for each risk, and if the coin indicates an event, it samples a tail loss;
+ * otherwise, it adds zero.
+ * <p>
+ * The Metalog tail at each leaf is fitted to quantiles sampled from a
+ * LogNormal distribution that covers the user-specified [lossLB, lossUB]
+ * at the central 80% interval.
+ * <p>
+ * The example then runs a Monte Carlo simulation to produce loss exceedance
+ * curves (LEC) for the combined risks AB and ABC, printing the full LEC
+ * on a p-grid from p=0.00 to p=1.00 as JSON.
+ */
 public class RiskHierarchyMetalogPGrid {
     // how many p-steps to print on [0,1]
     private static final int GRID_STEPS = 100;

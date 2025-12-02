@@ -10,12 +10,31 @@ import static com.risquanter.examples.ExampleUtil.buildObsJson;
 import static com.risquanter.examples.ExampleUtil.buildFitJson;
 import static com.risquanter.examples.ExampleUtil.writeToTestResource;
 
+
+/**
+ * Observational Metalog Fit Example
+ *
+ * Scenario:
+ *   Given a set of raw observations, fit a Metalog distribution
+ *   to approximate the empirical CDF.
+ *
+ * Steps:
+ *   1) Define the raw observations.
+ *   2) Compute plotting positions pᵢ using Hazen's formula: pᵢ = (i + 0.5) / n.
+ *   3) Fit a Metalog distribution to the (pᵢ, xᵢ) pairs.
+ *   4) Generate JSON traces for the fitted distribution and original observations for Vega-Lite visualization.
+ *   5) Fill a Vega-Lite spec template with the generated data and write it to a test resource file.
+ *
+ * The output can be visualized by pasting it into the online Vega-Lite editor:
+ * https://vega.github.io/editor/#/examples/vega-lite/bar_chart
+ */
 public class ObservationalMetalogFitExample {
     public static void main(String[] args) {
 
         String outputFilename = "vega-lite-observational.json";
 
         // 1) Raw observations (n = 9)
+        //TODO: values marked with (!) for further testing, as they cause numerical instability
         //double[] observations = { 78, 65, 82, 90, 120 /* ! */, 160, 143 /* ! */, /* 127 ,*/ 110, 85 };
         //double[] observations = { 78, 65, 82, 85,  160, 143 ,  127 , 110, 85 };
         double[] observations = { 78, 65, 82, 90, 160, 143, 127, 110, 85 };

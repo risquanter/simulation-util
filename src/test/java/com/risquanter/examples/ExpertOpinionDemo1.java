@@ -14,6 +14,26 @@ import static com.risquanter.examples.ExampleUtil.buildRulesJson;
 import static com.risquanter.examples.ExampleUtil.buildLabelJson;
 import static com.risquanter.examples.ExampleUtil.buildFitJson;;
 
+/**
+ * Expert‐Opinion Metalog Example: Modeling Risk Estimates
+ *
+ * Scenario:
+ *   An expert provides three quantile estimates for the possible loss amount (in $ thousands)
+ *   in a risk assessment:
+ *     •  10th percentile  (p=0.10):  $17k  ← lower bound L
+ *     •  50th percentile  (p=0.50):  $24k
+ *     •  90th percentile  (p=0.90):  $35k  ← upper bound U
+ *
+ * Steps:
+ *   1) Define the expert’s (pᵢ, Qᵢ) triplet.
+ *   2) Fit both an unbounded and a fully-bounded Metalog distribution with support [16, 40].
+ *   3) Generate JSON traces for the fitted distributions and expert points for Vega-Lite visualization.
+ *   4) Fill a Vega-Lite spec template with the generated data and write it to a test resource file.
+ *   5) Print the quantile values at the endpoints to verify the bounded fit.
+ *
+ * The output can be visualized by pasting it into the online Vega-Lite editor:
+ * https://vega.github.io/editor/#/examples/vega-lite/bar_chart
+ */
 public class ExpertOpinionDemo1 {
     private static final double EPS   = 1e-12;  // must match ε-anchors in the fitter
 
