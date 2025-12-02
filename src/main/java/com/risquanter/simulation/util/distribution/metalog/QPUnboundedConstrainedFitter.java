@@ -6,8 +6,50 @@ import org.ojalgo.optimisation.Variable;
 
 
 /**
- * Internal QP that only enforces strict monotonicity (dQ/dp ≥ ε)
- * on an unbounded metalog basis.  No bound constraints.
+ * QP-Unbounded Metalog Fitter
+ *
+ * Metalog Basis Functions
+ * ------------------------
+ * The quantile function Q(p) is represented as a linear combination of n basis
+ * functions T_j(p):
+ *
+ * Q(p) = Σ_{j=0..n-1} a_j · T_j(p)
+ *
+ * where the T_j are the “metalog” basis polynomials in the probability p.
+ * Common choices (n≥3) include:
+ * T₀(p) = 1
+ * T₁(p) = logit(p) = ln(p/(1−p))
+ * T₂(p) = (p − 0.5)·logit(p)
+ * T₃(p) = (p − 0.5)^2
+ * T₄(p) = (p − 0.5)^2·logit(p)
+ * …and higher-order combinations for added flexibility.
+ *
+ *
+ * Monotonicity Constraint (dQ/dp ≥ ε)
+ * -----------------------------------
+ * Q(p) is enforced to be strictly increasing by requiring its derivative
+ * on a grid of G points pₖ to satisfy:
+ *
+ * dQ/dp (pₖ) = Σ_j a_j · Tʹ_j(pₖ) ≥ ε
+ *
+ * where ε>0 is a small regularization constant (e.g. 1e−6). This turns the
+ * monotonicity condition into G linear constraints in the QP:
+ *
+ * D[k]·a ≥ ε, D[k,j] = Tʹ_j(pₖ)
+ *
+ *
+ * Putting It All Together
+ * -----------------------
+ * The QP solved is:
+ *
+ * minimize ½‖Y·a − xData‖² (least-squares fit at data points)
+ * subject to D·a ≥ ε (monotonicity)
+ *
+ * where:
+ * • Y[i,j] = T_j(pData[i]) (basis at your observed quantiles)
+ * • D[k,j] = Tʹ_j(gridP[k]) (derivatives on the enforce grid)
+ *
+ * No lower or upper bound constraints are applied in the unbounded version.
  */
 class QPUnboundedConstrainedFitter {
     private final double[] pData, xData;
