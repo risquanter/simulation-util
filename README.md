@@ -76,7 +76,19 @@ You should have received a copy of the GNU Affero General Public License along w
 
 1. Clone the repository
 2. Build: `mvn clean install`
-3. Run example: `mvn exec:java -Dexec.mainClass="com.risquanter.examples.Example"`
+3. Run the example from the command line:
+   ```bash
+   mvn exec:java -Dexec.mainClass="com.risquanter.examples.ExpertOpinionDemo1"
+   ```
+
+
+> **Note:**
+> To keep the compiled JAR lean, all example classes are located under `src/test/java` and are not included in the main build artifact.
+> If you want to run the examples without performing a full `mvn clean install`, you can compile the test sources with:
+> ```bash
+> mvn clean test
+> ```
+> This will compile the test classes, allowing you to run the examples with `mvn exec:java -Dexec.mainClass="..."` as shown above.
 
 ## References
 [1] T. W. Keelin, "The Metalog Distributions," *Decision Analysis*, vol. 13, no. 4, pp. 243–277, Dec. 2016. [Online]. Available: https://doi.org/10.1287/deca.2016.0338
