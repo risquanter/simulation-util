@@ -46,7 +46,7 @@ Metalog metalogBounded = QPFitter
 
 To generate quantiles for a full range of probabilities \(p\) from \(0\) to \(1\), use evenly spaced \(p\) values.  
 Make sure \(p\) never reaches the exact endpoints \(0\) or \(1\).  
-Instead, clamp \(p\) to the interval \((\text{EPS}, 1-\text{EPS})\), where `EPS` is a very small number (e.g., \(10^{-12}\)).
+Instead, clamp \(p\) to the interval $(\text{EPS}, 1-\text{EPS})$, where `EPS` is a very small number (e.g., $10^{-12}$):
 
 ```java
 double pForQ = Math.min(Math.max(p, EPS), 1.0 - EPS);
