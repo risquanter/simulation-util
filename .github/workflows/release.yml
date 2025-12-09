@@ -98,6 +98,7 @@ jobs:
 
       - name: Extract and verify
         run: |
+          set -euo pipefail
           mkdir -p /tmp/artifacts
           tar xzf /tmp/release-artifacts/artifacts.tgz -C /tmp/artifacts
           if [ -f /tmp/release-provenance/provenance.tgz ]; then
@@ -105,12 +106,6 @@ jobs:
           fi
           cd /tmp/artifacts
           sha256sum -c checksums.sha256
-
-    # - name: (Optional) Listing Sigstore provenance files
-    #   run: |
-    #     for s in /tmp/artifacts/*.bundle /tmp/artifacts/*.sigstore.json; do
-    #       [ -f "$s" ] && echo "Found provenance: $s"
-    #     done
 
 
     # No verification of Sigstore provenance is done here;
@@ -219,7 +214,7 @@ jobs:
           fi
           echo "======================================"
 
-      - name: Debug Maven settings
+      - name: Log Maven settings
         run: |
           echo "======================================"
           echo "Maven settings debug:"
@@ -236,6 +231,11 @@ jobs:
         with:
           distribution: temurin
           java-version: '21'
+
+      - name: Prepare provenance for verification
+        run: |
+          mkdir -p provenance-${{ inputs.run_id }}
+          cp /tmp/release-provenance/*.attest.bundle provenance-${{ inputs.run_id }}/
 
 
       - name: Deploy to Maven Central Publisher Portal
@@ -275,6 +275,34 @@ jobs:
           gpg --batch --yes --pinentry-mode loopback \
             --passphrase "${GPG_PASSPHRASE}" \
             --armor --detach-sign pom.xml
+
+          echo "=== Verifying Attestation for JAR ==="
+          cosign verify-blob \
+            --certificate-identity-regexp="https://github.com/risquanter/simulation-util/.github/workflows/ci-build.yml@refs/heads/main" \
+            --certificate-oidc-issuer=https://token.actions.githubusercontent.com \
+            --bundle provenance-${{ inputs.run_id }}/simulation.util-$VERSION.jar.attest.bundle \
+            target/simulation.util-$VERSION.jar
+
+          echo "=== Verifying Attestation for Sources ==="
+          cosign verify-blob \
+            --certificate-identity-regexp="https://github.com/risquanter/simulation-util/.github/workflows/ci-build.yml@refs/heads/main" \
+            --certificate-oidc-issuer=https://token.actions.githubusercontent.com \
+            --bundle provenance-${{ inputs.run_id }}/simulation.util-$VERSION-sources.jar.attest.bundle \
+            target/simulation.util-$VERSION-sources.jar
+
+          echo "=== Verifying Attestation for JavaDoc ==="
+          cosign verify-blob \
+            --certificate-identity-regexp="https://github.com/risquanter/simulation-util/.github/workflows/ci-build.yml@refs/heads/main" \
+            --certificate-oidc-issuer=https://token.actions.githubusercontent.com \
+            --bundle provenance-${{ inputs.run_id }}/simulation.util-$VERSION-javadoc.jar.attest.bundle \
+            target/simulation.util-$VERSION-javadoc.jar
+
+          echo "=== Verifying Attestation for POM ==="
+          cosign verify-blob \
+            --certificate-identity-regexp="https://github.com/risquanter/simulation-util/.github/workflows/ci-build.yml@refs/heads/main" \
+            --certificate-oidc-issuer=https://token.actions.githubusercontent.com \
+            --bundle provenance-${{ inputs.run_id }}/pom.xml.attest.bundle \
+            pom.xml
 
           # Create deployment bundle for Maven Central
           echo "Creating deployment bundle with Maven repository layout..."
@@ -358,6 +386,8 @@ jobs:
 
           echo "Deployment completed (staged)."
           echo "Open https://central.sonatype.com/ to inspect and publish the deployment."
+
+
 
       - name: Create signed git tag (GPG)
         env:
