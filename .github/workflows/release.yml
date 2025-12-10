@@ -273,8 +273,7 @@ jobs:
           echo "Running Maven build and sign..."
 
           # Build and sign artifacts only (no deployment via plugin)
-          mvn -B -ntp clean verify -DskipTests \
-            -Dgpg.passphrase="${GPG_PASSPHRASE}"
+          mvn -B -ntp clean verify -Dgpg.passphrase="${GPG_PASSPHRASE}"
 
           # Manually sign the POM file after build (maven-gpg-plugin doesn't do this automatically)
           echo "Signing POM file..."
