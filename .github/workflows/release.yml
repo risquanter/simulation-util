@@ -235,7 +235,7 @@ jobs:
       - name: Prepare provenance for verification
         run: |
           mkdir -p provenance-${{ inputs.run_id }}
-          cp /tmp/release-provenance/*.attest.bundle provenance-${{ inputs.run_id }}/
+          cp /tmp/artifacts/*.attest.bundle provenance-${{ inputs.run_id }}/
 
 
       - name: Deploy to Maven Central Publisher Portal
