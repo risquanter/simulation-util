@@ -403,23 +403,19 @@ jobs:
           git config --global user.name "Release Bot"
           git config --global url."https://${GITHUB_TOKEN}@github.com/".insteadOf "https://github.com/"
 
+          # Extract version from POM
+          VERSION=$(xmlstarlet sel -t -v "/_:project/_:version" pom.xml)
+
           # Pre-authenticate GPG agent by signing a dummy file
-          # This caches the passphrase for subsequent git tag operation
           echo "test" | gpg --batch --yes --pinentry-mode loopback \
             --passphrase "${GPG_PASSPHRASE}" --local-user "${GPG_KEYID}" \
             --sign --armor > /dev/null 2>&1
 
-          # Construct a release tag using short SHA
-          git fetch --all --tags
-          git checkout $GITHUB_SHA
-          RELEASE_TAG="v${GITHUB_SHA:0:8}"
-
-          # Create a GPG-signed tag (agent now has cached passphrase)
-          git tag -s "$RELEASE_TAG" -m "Release $RELEASE_TAG" \
-            --local-user "$GPG_KEYID" || true
+          # Create a GPG-signed tag with the version
+          git tag -s "v$VERSION" -m "Release v$VERSION" --local-user "$GPG_KEYID" || true
 
           # Push the tag using authenticated git
-          git push origin "$RELEASE_TAG"
+          git push origin "v$VERSION"
 
       - name: Clean up (always)
         if: always()
