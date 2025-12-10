@@ -1,7 +1,7 @@
 ﻿# Overview
 This library provides a low-level yet flexible probability modeling toolkit built on Keelin’s Metalog distribution system [1] and the HDR pseudo-random number generator (PRNG) proposed by Hubbard [2].
 
-It is designed for cybersecurity practitioners, tool providers, and decision scientists who want to accurately represent risks and translate expert judgment into quantitative models. By using structured confidence levels—often expressed as probability triplets (e.g., with 10% certainty losses will be below 2 million, with 50% certainty below 16 million, and with 90% certainty below 20 million)—experts can articulate their insights in a way that is both intuitive and mathematically rigorous.
+It is designed for cybersecurity practitioners, tool providers, and decision scientists who want to accurately represent risks and translate expert judgment into quantitative models. By using structured confidence levels—often expressed as probability triplets (e.g., with 10% certainty losses will be below 2 million, with 50% certainty below 16 million, and with 90% certainty below 20 million)—experts can articulate their assesments in a way that is both intuitive and mathematically rigorous.
 
 The key advantage of this toolkit is that it enables precise, simulation-based quantitative risk assessment and aggregation on the JVM without requiring experts to master complex mathematics. This makes it possible to incorporate expert elicitation directly into robust probabilistic models, supporting better-informed decisions in high-stakes domains such as cybersecurity and enterprise risk management.
 
@@ -9,13 +9,13 @@ The key advantage of this toolkit is that it enables precise, simulation-based q
 
 This library offers the following functionality:
 
-- Basis functions for quantile expansion
-- `Metalog` class for quantile and PDF evaluation
-- `QPFitter` class to fit a Metalog distribution via quadratic programming (QP) using the Ojalgo library
+The basic metalog functionality (basis functions for quantile expansion) as defined in the original papers and a QP fitter.
 
-The implementation follows the referenced paper for quantile and PDF evaluation.
+The library also provides a flexible yet simple builder API consisting of:    
+- `Metalog.java` class for quantile and PDF evaluation
+- `QPFitter.java` class to fit a Metalog distribution via quadratic programming (QP) using the Ojalgo library
 
-Instead of ordinary least squares (OLS), the current version uses a quadratic programming (QP) approach for fitting, with convex feasibility constraints (such as monotonicity and bounds) on the coefficients. This is motivated by Keelin’s proof that the set of feasible Metalog coefficients is convex, making convex optimization (QP) both robust and theoretically justified for Metalog fitting.
+The implementation follows the referenced paper for quantile and PDF evaluation. However, instead of ordinary least squares (OLS), the current version uses a quadratic programming (QP) approach for fitting, with convex feasibility constraints (such as monotonicity and bounds) on the coefficients. This is motivated by Keelin’s proof that the set of feasible Metalog coefficients is convex, making convex optimization (QP) both robust and theoretically justified for Metalog fitting.
 
 # Usage
 
