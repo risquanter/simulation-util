@@ -235,7 +235,7 @@ jobs:
       - name: Prepare provenance for verification
         run: |
           mkdir -p provenance-${{ inputs.run_id }}
-          cp /tmp/artifacts/*.attest.bundle provenance-${{ inputs.run_id }}/
+          cp /tmp/artifacts/*.bundle provenance-${{ inputs.run_id }}/
 
       - name: Install cosign
         uses: sigstore/cosign-installer@v3.3.0
@@ -281,35 +281,40 @@ jobs:
             --passphrase "${GPG_PASSPHRASE}" \
             --armor --detach-sign pom.xml
 
-          echo "=== Verifying Attestation for JAR ==="
+          echo "=== Testing Build Reproducibility with Cosign Verification ==="
+          echo "If builds are reproducible, CI bundles should verify newly built artifacts..."
+
+          echo "=== Verifying Fresh JAR against CI Bundle ==="
           cosign verify-blob \
             --certificate-identity-regexp="https://github.com/risquanter/simulation-util/.github/workflows/ci-build.yml@refs/heads/main" \
             --certificate-oidc-issuer=https://token.actions.githubusercontent.com \
-            --bundle provenance-${{ inputs.run_id }}/simulation.util-$VERSION.jar.attest.bundle \
+            --bundle /tmp/artifacts/simulation.util-$VERSION.jar.bundle \
             target/simulation.util-$VERSION.jar
 
-          echo "=== Verifying Attestation for Sources ==="
+          echo "=== Verifying Fresh Sources JAR against CI Bundle ==="
           cosign verify-blob \
             --certificate-identity-regexp="https://github.com/risquanter/simulation-util/.github/workflows/ci-build.yml@refs/heads/main" \
             --certificate-oidc-issuer=https://token.actions.githubusercontent.com \
-            --bundle provenance-${{ inputs.run_id }}/simulation.util-$VERSION-sources.jar.attest.bundle \
+            --bundle /tmp/artifacts/simulation.util-$VERSION-sources.jar.bundle \
             target/simulation.util-$VERSION-sources.jar
 
-          echo "=== Verifying Attestation for JavaDoc ==="
+          echo "=== Verifying Fresh JavaDoc JAR against CI Bundle ==="
           cosign verify-blob \
             --certificate-identity-regexp="https://github.com/risquanter/simulation-util/.github/workflows/ci-build.yml@refs/heads/main" \
             --certificate-oidc-issuer=https://token.actions.githubusercontent.com \
-            --bundle provenance-${{ inputs.run_id }}/simulation.util-$VERSION-javadoc.jar.attest.bundle \
+            --bundle /tmp/artifacts/simulation.util-$VERSION-javadoc.jar.bundle \
             target/simulation.util-$VERSION-javadoc.jar
 
-          echo "=== Verifying Attestation for POM ==="
+          echo "=== Verifying Fresh POM against CI Bundle ==="
           cosign verify-blob \
             --certificate-identity-regexp="https://github.com/risquanter/simulation-util/.github/workflows/ci-build.yml@refs/heads/main" \
             --certificate-oidc-issuer=https://token.actions.githubusercontent.com \
-            --bundle provenance-${{ inputs.run_id }}/pom.xml.attest.bundle \
+            --bundle /tmp/artifacts/pom.xml.bundle \
             pom.xml
 
-          # Create deployment bundle for Maven Central
+          echo "🎉 Build reproducibility PROVEN! Fresh artifacts match CI signatures."
+
+          # Create deployment bundle using verified reproducible artifacts
           echo "Creating deployment bundle with Maven repository layout..."
           BUNDLE_NAME="bundle.zip"
           BUNDLE_DIR="bundle_staging"
