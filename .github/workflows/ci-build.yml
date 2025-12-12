@@ -92,9 +92,10 @@ jobs:
           echo "Detected version: $VERSION"
 
           # Sign POM file manually (maven-gpg-plugin doesn't do this automatically)
-          gpg --batch --yes --pinentry-mode loopback \
-            --passphrase "${GPG_PASSPHRASE}" \
-            --armor --detach-sign pom.xml
+          # Temporarily commented out to test if GPG plugin handles POM signing
+          # gpg --batch --yes --pinentry-mode loopback \
+          #   --passphrase "${GPG_PASSPHRASE}" \
+          #   --armor --detach-sign pom.xml
 
           # Create Maven repository structure
           BUNDLE_DIR="maven_bundle"
@@ -108,9 +109,21 @@ jobs:
           cp target/simulation.util-$VERSION-javadoc.jar "$BUNDLE_DIR/com/risquanter/simulation.util/$VERSION/"
           cp target/simulation.util-$VERSION-javadoc.jar.asc "$BUNDLE_DIR/com/risquanter/simulation.util/$VERSION/"
 
+          # Copy Sigstore JSON files
+          cp target/simulation.util-$VERSION.jar.sigstore.json "$BUNDLE_DIR/com/risquanter/simulation.util/$VERSION/"
+          cp target/simulation.util-$VERSION-sources.jar.sigstore.json "$BUNDLE_DIR/com/risquanter/simulation.util/$VERSION/"
+          cp target/simulation.util-$VERSION-javadoc.jar.sigstore.json "$BUNDLE_DIR/com/risquanter/simulation.util/$VERSION/"
+
           # Copy POM and signature with proper naming
           cp pom.xml "$BUNDLE_DIR/com/risquanter/simulation.util/$VERSION/simulation.util-$VERSION.pom"
-          cp pom.xml.asc "$BUNDLE_DIR/com/risquanter/simulation.util/$VERSION/simulation.util-$VERSION.pom.asc"
+          # Copy POM signature if it exists (either from manual signing or GPG plugin)
+          if [[ -f pom.xml.asc ]]; then
+            cp pom.xml.asc "$BUNDLE_DIR/com/risquanter/simulation.util/$VERSION/simulation.util-$VERSION.pom.asc"
+          fi
+          # Copy POM sigstore file if it exists
+          if [[ -f target/simulation.util-$VERSION.pom.sigstore.json ]]; then
+            cp target/simulation.util-$VERSION.pom.sigstore.json "$BUNDLE_DIR/com/risquanter/simulation.util/$VERSION/"
+          fi
 
           # Generate checksums for Maven Central
           cd "$BUNDLE_DIR/com/risquanter/simulation.util/$VERSION"
