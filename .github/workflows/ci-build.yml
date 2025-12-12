@@ -116,10 +116,15 @@ jobs:
 
           # Copy POM and signature with proper naming
           cp pom.xml "$BUNDLE_DIR/com/risquanter/simulation.util/$VERSION/simulation.util-$VERSION.pom"
-          # Copy POM signature if it exists (either from manual signing or GPG plugin)
+          # Copy POM signature if it exists (manual signing)
           if [[ -f pom.xml.asc ]]; then
             cp pom.xml.asc "$BUNDLE_DIR/com/risquanter/simulation.util/$VERSION/simulation.util-$VERSION.pom.asc"
           fi
+          # Copy POM signature if it exists (plugin signing)
+          if [[ -f target/simulation.util-$VERSION.pom.asc ]]; then
+            cp target/simulation.util-$VERSION.pom.asc "$BUNDLE_DIR/com/risquanter/simulation.util/$VERSION/simulation.util-$VERSION.pom.asc"
+          fi
+
           # Copy POM sigstore file if it exists
           if [[ -f target/simulation.util-$VERSION.pom.sigstore.json ]]; then
             cp target/simulation.util-$VERSION.pom.sigstore.json "$BUNDLE_DIR/com/risquanter/simulation.util/$VERSION/"
