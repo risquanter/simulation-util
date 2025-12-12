@@ -54,7 +54,6 @@ jobs:
           echo "✅ TOTP verified successfully"
 
 
-  # JOB 2: Signing and release (ubuntu-latest)
   sign-and-publish:
     needs: verify-authorization
     runs-on: ubuntu-latest
@@ -83,7 +82,7 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           gh run download ${{ inputs.run_id }} \
-            --name bundle-${{ inputs.run_id }} \
+            --name deployment-${{ inputs.run_id }} \
             --dir /tmp/maven-release \
             --repo ${{ github.repository }}
 
@@ -96,88 +95,74 @@ jobs:
             --dir /tmp/release-provenance \
             --repo ${{ github.repository }}
 
-      - name: Extract bundle and verify
+      - name: Extract and verify artifacts
         run: |
           set -euo pipefail
-          mkdir -p /tmp/artifacts
+
+          # Extract version from POM
+          VERSION=$(xmlstarlet sel -t -v "/_:project/_:version" pom.xml)
+          echo "Detected version: $VERSION"
+
           # Extract the Maven bundle
           cd /tmp/maven-release
-          unzip -q maven-central-artifacts.zip -d /tmp/bundle-contents
+          unzip -q maven-central-artifacts.zip -d /tmp/maven-deployment-contents
 
-          # For Sigstore verification, we need the original artifacts and provenance
-          # The provenance is uploaded separately
+          # Extract provenance
+          cd /tmp/release-provenance
+          tar -xzf provenance.tgz
 
+          # The JARs are located at: com/risquanter/simulation.util/$VERSION/
+          JAR_PATH="/tmp/maven-deployment-contents/com/risquanter/simulation.util/$VERSION"
+          echo "Looking for JARs in: $JAR_PATH"
+          ls -la "$JAR_PATH"
 
-    # No verification of Sigstore provenance is done here;
-    # users can verify signatures after download.
-    # Sigstore provenance is attached during deployment below.
-      - name: (Optional) List Sigstore provenance files
-        run: |
-          shopt -s nullglob
-          echo "Sigstore provenance files:"
-          ls -lh /tmp/artifacts/*.bundle 2>/dev/null || echo "No .bundle files found"
-          echo "Sigstore signature files:"
-          ls -lh /tmp/artifacts/*.sig 2>/dev/null || echo "No .sig files found"
-          echo "Sigstore certificate files:"
-          ls -lh /tmp/artifacts/*.cert 2>/dev/null || echo "No .cert files found"
-          echo "Bundle contents:"
-          ls -lh /tmp/bundle-contents/ 2>/dev/null || echo "No bundle contents found"
+      - name: Install cosign
+        uses: sigstore/cosign-installer@v3.3.0
 
-      - name: Import encrypted GPG private-subkey into ephemeral GNUPGHOME
+      - name: Verify Sigstore signatures
         env:
-          GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
-          GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
+          COSIGN_EXPERIMENTAL: 1
         run: |
           set -euo pipefail
 
-          # create ephemeral GNUPGHOME for isolation
-          export GNUPGHOME="$(mktemp -d)"
-          chmod 700 "$GNUPGHOME"
+          VERSION=$(xmlstarlet sel -t -v "/_:project/_:version" pom.xml)
+          JAR_PATH="/tmp/maven-deployment-contents/com/risquanter/simulation.util/$VERSION"
+          PROVENANCE_PATH="/tmp/release-provenance"
 
-          # write the armored encrypted blob to a temp file (do not expose to logs)
-          TMP_ENC="/tmp/private-subkey.asc.gpg"
-          printf '%s' "$GPG_PRIVATE_KEY" > "$TMP_ENC"
-          chmod 600 "$TMP_ENC"
+          echo "Verifying Sigstore signatures..."
 
-          # decrypt the encrypted blob into a temporary plaintext file
-          TMP_PLAINT="/tmp/private-subkey.asc"
-          gpg --batch --yes --pinentry-mode loopback --passphrase "$GPG_PASSPHRASE" \
-            --decrypt --output "$TMP_PLAINT" "$TMP_ENC"
+          # Verify each JAR file against its Sigstore signature
+          cd "$JAR_PATH"
+          for jar in simulation.util-*.jar; do
+            if [[ -f "$PROVENANCE_PATH/${jar}.bundle" ]]; then
+              echo "Verifying $jar..."
+              cosign verify-blob --bundle "$PROVENANCE_PATH/${jar}.bundle" "$jar"
+              echo "✅ $jar signature verified"
+            else
+              echo "❌ Missing bundle for $jar"
+              exit 1
+            fi
+          done
 
-          # import the plaintext secret subkey into the ephemeral GNUPGHOME
-          gpg --batch --import "$TMP_PLAINT"
-
-          # kill agent to ensure allowed settings are applied later if needed
-          gpgconf --kill gpg-agent || true
-
-          # discover the signing keyid (first secret key)
-          KEYID=$(gpg --list-secret-keys --with-colons | awk -F: '/^sec:/ {print $5; exit}')
-          if [ -z "$KEYID" ]; then
-            echo "Failed to determine GPG KEYID"
-            shred -u "$TMP_PLAINT" || rm -f "$TMP_PLAINT"
-            rm -f "$TMP_ENC"
+          # Verify POM file signature
+          POM_FILE="simulation.util-$VERSION.pom"
+          if [[ -f "$PROVENANCE_PATH/pom.xml.bundle" ]]; then
+            echo "Verifying $POM_FILE..."
+            cosign verify-blob --bundle "$PROVENANCE_PATH/pom.xml.bundle" "$POM_FILE"
+            echo "✅ $POM_FILE signature verified"
+          else
+            echo "❌ Missing bundle for pom.xml"
             exit 1
           fi
 
-          # export GNUPGHOME and KEYID for subsequent steps
-          echo "GNUPGHOME=$GNUPGHOME" >> $GITHUB_ENV
-          echo "GPG_KEYID=$KEYID" >> $GITHUB_ENV
+          echo "✅ All JAR and POM signatures verified successfully"
 
-          # store public key copy for inspection if needed
-          gpg --armor --export "$KEYID" > "$GNUPGHOME/publickey.asc"
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
 
-          # securely delete the plaintext file as soon as possible
-          shred -u "$TMP_PLAINT" || rm -f "$TMP_PLAINT"
-          rm -f "$TMP_ENC"
-
-          echo "Imported encrypted GPG subkey into ephemeral GNUPGHOME and removed plaintext."
-
-
-
-
-      # Write settings.xml for Central Publisher Portal
-      # Uses CENTRAL_PORTAL_USERNAME and CENTRAL_PORTAL_TOKEN for authentication
-      # Paste the generated <server> block from the portal as shown below
       - name: Write settings.xml for Central Publisher Portal
         env:
           CENTRAL_PORTAL_USERNAME: ${{ secrets.CENTRAL_PORTAL_USERNAME }}
@@ -196,83 +181,34 @@ jobs:
           </settings>
           EOF
 
-          # Replace placeholders with actual values
           sed -i "s/USERNAME_PLACEHOLDER/${CENTRAL_PORTAL_USERNAME}/g" "$HOME/.m2/settings.xml"
           sed -i "s/PASSWORD_PLACEHOLDER/${CENTRAL_PORTAL_TOKEN}/g" "$HOME/.m2/settings.xml"
           chmod 600 "$HOME/.m2/settings.xml"
 
-          # Verify
-          echo "======================================"
-          echo "Settings.xml verification:"
-          echo "======================================"
-          if [ -f "$HOME/.m2/settings.xml" ]; then
-            echo "✅ settings.xml exists at: $HOME/.m2/settings.xml"
-            echo "File size: $(stat -c%s "$HOME/.m2/settings.xml")"
-            echo "Server ID check:"
-            grep -q '<id>central</id>' "$HOME/.m2/settings.xml" && echo "✅ Server 'central' configured" || echo "❌ Server 'central' NOT found"
-          else
-            echo "❌ ERROR: settings.xml was not created!"
-            exit 1
-          fi
-          echo "======================================"
-
-      - name: Log Maven settings
-        run: |
-          echo "======================================"
-          echo "Maven settings debug:"
-          echo "======================================"
-          echo "HOME: $HOME"
-          echo "Contents of $HOME/.m2/settings.xml:"
-          cat "$HOME/.m2/settings.xml"
-          echo ""
-          echo "Running mvn help:effective-settings to see what Maven sees:"
-          mvn help:effective-settings -s "$HOME/.m2/settings.xml"
-
-      - name: Set up Java
-        uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: '21'
-
-      - name: Prepare provenance for verification
-        run: |
-          mkdir -p provenance-${{ inputs.run_id }}
-          cp /tmp/artifacts/*.bundle provenance-${{ inputs.run_id }}/
-
-      - name: Install cosign
-        uses: sigstore/cosign-installer@v3.3.0
-
       - name: Deploy to Maven Central Publisher Portal
         env:
-          GNUPGHOME: ${{ env.GNUPGHOME }}
-          GPG_KEYID: ${{ env.GPG_KEYID }}
-          GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
           CENTRAL_PORTAL_USERNAME: ${{ secrets.CENTRAL_PORTAL_USERNAME }}
           CENTRAL_PORTAL_TOKEN: ${{ secrets.CENTRAL_PORTAL_TOKEN }}
         run: |
           set -euo pipefail
 
-          # Extract version from POM
           VERSION=$(xmlstarlet sel -t -v "/_:project/_:version" pom.xml)
-          echo "Detected version: $VERSION"
+          echo "Deploying version: $VERSION"
 
-          # The bundle is already created by CI - just use it directly
-          echo "Using pre-built Maven bundle from CI..."
-          MAVEN_CENTRAL_TMP="maven-central-artifacts.zip"
-          cp /tmp/maven-release/maven-central-artifacts.zip target/$MAVEN_CENTRAL_TMP
+          # Use the pre-built Maven bundle
+          mkdir -p target
+          cp /tmp/maven-release/maven-central-artifacts.zip target/
 
           echo "Bundle structure:"
-          unzip -l target/"$MAVEN_CENTRAL_TMP"
+          unzip -l target/maven-central-artifacts.zip
 
           # Upload to Central Portal using REST API
           echo "Uploading to Central Portal..."
-
-          # Calculate Bearer token: base64 encode username:password
           BEARER_TOKEN=$(printf "%s:%s" "${CENTRAL_PORTAL_USERNAME}" "${CENTRAL_PORTAL_TOKEN}" | base64 -w 0)
 
           UPLOAD_RESPONSE=$(curl -X POST \
             -H "Authorization: Bearer ${BEARER_TOKEN}" \
-            -F "bundle=@target/$MAVEN_CENTRAL_TMP" \
+            -F "bundle=@target/maven-central-artifacts.zip" \
             "https://central.sonatype.com/api/v1/publisher/upload?name=simulation.util-${VERSION}&publishingType=USER_MANAGED")
 
           echo "Upload response: $UPLOAD_RESPONSE"
@@ -289,58 +225,13 @@ jobs:
 
           # Check deployment status
           echo "Checking deployment status..."
-          STATUS_RESPONSE=$(
-          curl -X POST "https://central.sonatype.com/api/v1/publisher/status?id=$DEPLOYMENT_ID" \
-            -H "Authorization: Bearer ${BEARER_TOKEN}" -H "Content-Type: application/json"
-            )
+          STATUS_RESPONSE=$(curl -X POST "https://central.sonatype.com/api/v1/publisher/status?id=$DEPLOYMENT_ID" \
+            -H "Authorization: Bearer ${BEARER_TOKEN}" -H "Content-Type: application/json")
 
-          echo "Deployment status: $STATUS_RESPONSE"          # Note: The publish goal stages the deployment
-          # You must manually publish from https://central.sonatype.com/
+          echo "Deployment status: $STATUS_RESPONSE"
+          echo "✅ Deployment completed (staged). Visit https://central.sonatype.com/ to publish."
 
-          echo "Deployment completed (staged)."
-          echo "Open https://central.sonatype.com/ to inspect and publish the deployment."
-
-
-
-      - name: Create signed git tag (GPG)
-        env:
-          GNUPGHOME: ${{ env.GNUPGHOME }}
-          GPG_KEYID: ${{ env.GPG_KEYID }}
-          GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          set -euo pipefail
-
-          # Configure git for tagging and authentication
-          git config --global user.email "ci@risquanter.example"
-          git config --global user.name "Release Bot"
-          git config --global url."https://${GITHUB_TOKEN}@github.com/".insteadOf "https://github.com/"
-
-          # Extract version from POM
-          VERSION=$(xmlstarlet sel -t -v "/_:project/_:version" pom.xml)
-
-          # Pre-authenticate GPG agent by signing a dummy file
-          echo "test" | gpg --batch --yes --pinentry-mode loopback \
-            --passphrase "${GPG_PASSPHRASE}" --local-user "${GPG_KEYID}" \
-            --sign --armor > /dev/null 2>&1
-
-          # Create a GPG-signed tag with the version
-          git tag -s "v$VERSION" -m "Release v$VERSION" --local-user "$GPG_KEYID" || true
-
-          # Push the tag using authenticated git
-          git push origin "v$VERSION"
-
-      - name: Clean up (always)
+      - name: Clean up
         if: always()
-        env:
-          GNUPGHOME: ${{ env.GNUPGHOME }}
         run: |
-          set +e
-          # remove ephemeral GNUPGHOME
-          if [ -n "${GNUPGHOME:-}" ] && [ -d "${GNUPGHOME}" ]; then
-            rm -rf "${GNUPGHOME}"
-          fi
-          # remove temporary maven settings
-          if [ -f "$HOME/.m2/settings.xml" ]; then
-            shred -u "$HOME/.m2/settings.xml" || rm -f "$HOME/.m2/settings.xml"
-          fi
+          rm -f "$HOME/.m2/settings.xml" 2>/dev/null || true
