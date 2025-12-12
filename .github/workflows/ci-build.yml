@@ -23,49 +23,80 @@ jobs:
           distribution: temurin
           java-version: '21'
 
-      - name: Build and run tests
-        run: mvn -B -ntp clean verify -Dgpg.skip=true
+      - name: Install tools
+        run: sudo apt-get update -y && sudo apt-get install -y jq tar gpg xmlstarlet zip
 
-      - name: Collect artifacts
+
+      - name: Import GPG key for signing
+        env:
+          GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
+          GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
         run: |
-          # Create output directory
-          mkdir -p out
+          set -euo pipefail
+          export GNUPGHOME="$(mktemp -d)"
+          chmod 700 "$GNUPGHOME"
 
-          # Show what's in target
-          echo "Contents of target directory:"
-          ls -la target/
+          echo "$GPG_PRIVATE_KEY" | gpg --batch --import
 
-          # Copy artifacts with verification
-          echo "Copying artifacts..."
-          cp target/simulation.util-*.jar out/ || exit 1
-          # --- CHANGED: copy pom.xml into out so it is included in artifacts.tgz
-          cp pom.xml out/ || exit 1
+          KEYID=$(gpg --list-secret-keys --with-colons | awk -F: '/^sec:/ {print $5; exit}')
+          echo "GNUPGHOME=$GNUPGHOME" >> $GITHUB_ENV
+          echo "GPG_KEYID=$KEYID" >> $GITHUB_ENV
 
-          # Ensure we copied all variants (main, sources, javadoc)
-          echo "Verifying all required artifacts..."
-          for type in "" "-sources" "-javadoc"; do
-            if ! ls out/simulation.util-*${type}.jar >/dev/null 2>&1; then
-              echo "Missing required artifact: ${type}.jar"
-              exit 1
-            fi
+
+
+      - name: Build and run tests
+        run: mvn -B -ntp clean verify -Dgpg.passphrase="${{ secrets.GPG_PASSPHRASE }}"
+
+      - name: Create Maven deployment bundle
+        env:
+          GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
+        run: |
+          set -euo pipefail
+
+          # Extract version from POM
+          VERSION=$(xmlstarlet sel -t -v "/_:project/_:version" pom.xml)
+          echo "Detected version: $VERSION"
+
+          # Sign POM file manually (maven-gpg-plugin doesn't do this automatically)
+          gpg --batch --yes --pinentry-mode loopback \
+            --passphrase "${GPG_PASSPHRASE}" \
+            --armor --detach-sign pom.xml
+
+          # Create Maven repository structure
+          BUNDLE_DIR="maven_bundle"
+          mkdir -p "$BUNDLE_DIR/com/risquanter/simulation.util/$VERSION"
+
+          # Copy artifacts with GPG signatures
+          cp target/simulation.util-$VERSION.jar "$BUNDLE_DIR/com/risquanter/simulation.util/$VERSION/"
+          cp target/simulation.util-$VERSION.jar.asc "$BUNDLE_DIR/com/risquanter/simulation.util/$VERSION/"
+          cp target/simulation.util-$VERSION-sources.jar "$BUNDLE_DIR/com/risquanter/simulation.util/$VERSION/"
+          cp target/simulation.util-$VERSION-sources.jar.asc "$BUNDLE_DIR/com/risquanter/simulation.util/$VERSION/"
+          cp target/simulation.util-$VERSION-javadoc.jar "$BUNDLE_DIR/com/risquanter/simulation.util/$VERSION/"
+          cp target/simulation.util-$VERSION-javadoc.jar.asc "$BUNDLE_DIR/com/risquanter/simulation.util/$VERSION/"
+
+          # Copy POM and signature with proper naming
+          cp pom.xml "$BUNDLE_DIR/com/risquanter/simulation.util/$VERSION/simulation.util-$VERSION.pom"
+          cp pom.xml.asc "$BUNDLE_DIR/com/risquanter/simulation.util/$VERSION/simulation.util-$VERSION.pom.asc"
+
+          # Generate checksums for Maven Central
+          cd "$BUNDLE_DIR/com/risquanter/simulation.util/$VERSION"
+          for file in simulation.util-$VERSION.jar simulation.util-$VERSION-sources.jar simulation.util-$VERSION-javadoc.jar simulation.util-$VERSION.pom; do
+            md5sum "$file" | awk '{print $1}' > "$file.md5"
+            sha1sum "$file" | awk '{print $1}' > "$file.sha1"
           done
+          cd -
 
-          # Show what we copied
-          echo "Contents of out directory:"
-          ls -la out/
+          # Create deployment bundle ZIP
+          cd "$BUNDLE_DIR"
+          zip -r "../maven-central-artifacts.zip" .
+          cd ..
 
-          # Generate checksums including pom.xml
+          # Also create simple artifacts for Sigstore signing
+          mkdir -p out
+          cp target/simulation.util-*.jar out/
+          cp pom.xml out/
           cd out
-          # --- CHANGED: include pom.xml in checksums so integrity covers the POM
           sha256sum *.jar pom.xml > checksums.sha256
-
-          # Create artifacts archive including pom.xml and checksums
-          # --- CHANGED: include pom.xml in artifacts.tgz so release job can use it
-          tar czf artifacts.tgz *.jar pom.xml checksums.sha256
-
-          # Show final structure
-          echo "Final out directory contents:"
-          ls -la
 
       - name: Install cosign
         uses: sigstore/cosign-installer@v3.3.0
@@ -100,11 +131,11 @@ jobs:
           # Package provenance files (include pom-related provenance)
           tar czf provenance.tgz *.sig *.cert *.bundle
 
-      - name: Upload build artifacts
+      - name: Upload Maven deployment bundle
         uses: actions/upload-artifact@v4
         with:
-          name: unsigned-artifacts-${{ github.run_id }}
-          path: out/artifacts.tgz
+          name: bundle-${{ github.run_id }}
+          path: maven-central-artifacts.zip
           retention-days: 7
 
       - name: Upload provenance
@@ -113,3 +144,10 @@ jobs:
           name: provenance-${{ github.run_id }}
           path: out/provenance.tgz
           retention-days: 7
+
+      - name: Cleanup GPG
+        if: always()
+        run: |
+          if [ -n "${GNUPGHOME:-}" ] && [ -d "${GNUPGHOME}" ]; then
+            rm -rf "${GNUPGHOME}"
+          fi

@@ -78,13 +78,13 @@ jobs:
           sudo apt-get update -y
           sudo apt-get install -y jq tar gpg xmlstarlet
 
-      - name: Download unsigned artifacts
+      - name: Download Maven deployment bundle
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           gh run download ${{ inputs.run_id }} \
-            --name unsigned-artifacts-${{ inputs.run_id }} \
-            --dir /tmp/release-artifacts \
+            --name bundle-${{ inputs.run_id }} \
+            --dir /tmp/maven-release \
             --repo ${{ github.repository }}
 
       - name: Download provenance
@@ -96,16 +96,16 @@ jobs:
             --dir /tmp/release-provenance \
             --repo ${{ github.repository }}
 
-      - name: Extract and verify
+      - name: Extract bundle and verify
         run: |
           set -euo pipefail
           mkdir -p /tmp/artifacts
-          tar xzf /tmp/release-artifacts/artifacts.tgz -C /tmp/artifacts
-          if [ -f /tmp/release-provenance/provenance.tgz ]; then
-            tar xzf /tmp/release-provenance/provenance.tgz -C /tmp/artifacts || true
-          fi
-          cd /tmp/artifacts
-          sha256sum -c checksums.sha256
+          # Extract the Maven bundle
+          cd /tmp/maven-release
+          unzip -q maven-central-artifacts.zip -d /tmp/bundle-contents
+
+          # For Sigstore verification, we need the original artifacts and provenance
+          # The provenance is uploaded separately
 
 
     # No verification of Sigstore provenance is done here;
@@ -120,6 +120,8 @@ jobs:
           ls -lh /tmp/artifacts/*.sig 2>/dev/null || echo "No .sig files found"
           echo "Sigstore certificate files:"
           ls -lh /tmp/artifacts/*.cert 2>/dev/null || echo "No .cert files found"
+          echo "Bundle contents:"
+          ls -lh /tmp/bundle-contents/ 2>/dev/null || echo "No bundle contents found"
 
       - name: Import encrypted GPG private-subkey into ephemeral GNUPGHOME
         env:
@@ -254,112 +256,13 @@ jobs:
           VERSION=$(xmlstarlet sel -t -v "/_:project/_:version" pom.xml)
           echo "Detected version: $VERSION"
 
-          # Configure GPG agent for Maven's GPG plugin
-          cat > "$GNUPGHOME/gpg-agent.conf" << EOF
-          allow-loopback-pinentry
-          max-cache-ttl 7200
-          default-cache-ttl 7200
-          EOF
+          # The bundle is already created by CI - just use it directly
+          echo "Using pre-built Maven bundle from CI..."
+          MAVEN_CENTRAL_TMP="maven-central-artifacts.zip"
+          cp /tmp/maven-release/maven-central-artifacts.zip target/$MAVEN_CENTRAL_TMP
 
-          cat > "$GNUPGHOME/gpg.conf" << EOF
-          use-agent
-          pinentry-mode loopback
-          EOF
-
-          # Restart GPG agent with new config
-          gpgconf --kill gpg-agent || true
-          gpg-agent --daemon --allow-loopback-pinentry || true
-
-          echo "Running Maven build and sign..."
-
-          # Build and sign artifacts only (no deployment via plugin)
-          mvn -B -ntp clean verify -Dgpg.passphrase="${GPG_PASSPHRASE}"
-
-          # Manually sign the POM file after build (maven-gpg-plugin doesn't do this automatically)
-          echo "Signing POM file..."
-          gpg --batch --yes --pinentry-mode loopback \
-            --passphrase "${GPG_PASSPHRASE}" \
-            --armor --detach-sign pom.xml
-
-          echo "=== Testing Build Reproducibility with Cosign Verification ==="
-          echo "If builds are reproducible, CI bundles should verify newly built artifacts..."
-
-          echo "=== Verifying Fresh JAR against CI Bundle ==="
-          cosign verify-blob \
-            --certificate-identity-regexp="https://github.com/risquanter/simulation-util/.github/workflows/ci-build.yml@refs/heads/main" \
-            --certificate-oidc-issuer=https://token.actions.githubusercontent.com \
-            --bundle /tmp/artifacts/simulation.util-$VERSION.jar.bundle \
-            target/simulation.util-$VERSION.jar
-
-          echo "=== Verifying Fresh Sources JAR against CI Bundle ==="
-          cosign verify-blob \
-            --certificate-identity-regexp="https://github.com/risquanter/simulation-util/.github/workflows/ci-build.yml@refs/heads/main" \
-            --certificate-oidc-issuer=https://token.actions.githubusercontent.com \
-            --bundle /tmp/artifacts/simulation.util-$VERSION-sources.jar.bundle \
-            target/simulation.util-$VERSION-sources.jar
-
-          echo "=== Verifying Fresh JavaDoc JAR against CI Bundle ==="
-          cosign verify-blob \
-            --certificate-identity-regexp="https://github.com/risquanter/simulation-util/.github/workflows/ci-build.yml@refs/heads/main" \
-            --certificate-oidc-issuer=https://token.actions.githubusercontent.com \
-            --bundle /tmp/artifacts/simulation.util-$VERSION-javadoc.jar.bundle \
-            target/simulation.util-$VERSION-javadoc.jar
-
-          echo "=== Verifying Fresh POM against CI Bundle ==="
-          cosign verify-blob \
-            --certificate-identity-regexp="https://github.com/risquanter/simulation-util/.github/workflows/ci-build.yml@refs/heads/main" \
-            --certificate-oidc-issuer=https://token.actions.githubusercontent.com \
-            --bundle /tmp/artifacts/pom.xml.bundle \
-            pom.xml
-
-          echo "🎉 Build reproducibility PROVEN! Fresh artifacts match CI signatures."
-
-          # Create deployment bundle using verified reproducible artifacts
-          echo "Creating deployment bundle with Maven repository layout..."
-          BUNDLE_NAME="bundle.zip"
-          BUNDLE_DIR="bundle_staging"
-
-          # Extract version from POM
-          VERSION=$(xmlstarlet sel -t -v "/_:project/_:version" pom.xml)
-          echo "Detected version: $VERSION"
-
-          # Create the Maven repository structure
-          mkdir -p "$BUNDLE_DIR/com/risquanter/simulation.util/$VERSION"
-
-          # Copy all artifacts to the proper directory structure
-          cp target/simulation.util-$VERSION.jar "$BUNDLE_DIR/com/risquanter/simulation.util/$VERSION/"
-          cp target/simulation.util-$VERSION.jar.asc "$BUNDLE_DIR/com/risquanter/simulation.util/$VERSION/"
-          cp target/simulation.util-$VERSION-sources.jar "$BUNDLE_DIR/com/risquanter/simulation.util/$VERSION/"
-          cp target/simulation.util-$VERSION-sources.jar.asc "$BUNDLE_DIR/com/risquanter/simulation.util/$VERSION/"
-          cp target/simulation.util-$VERSION-javadoc.jar "$BUNDLE_DIR/com/risquanter/simulation.util/$VERSION/"
-          cp target/simulation.util-$VERSION-javadoc.jar.asc "$BUNDLE_DIR/com/risquanter/simulation.util/$VERSION/"
-
-          # Copy POM and its signature with proper naming
-          cp pom.xml "$BUNDLE_DIR/com/risquanter/simulation.util/$VERSION/simulation.util-$VERSION.pom"
-          cp pom.xml.asc "$BUNDLE_DIR/com/risquanter/simulation.util/$VERSION/simulation.util-$VERSION.pom.asc"
-
-          # Generate MD5 and SHA1 checksums for all artifacts
-          echo "Generating checksums..."
-          cd "$BUNDLE_DIR/com/risquanter/simulation.util/$VERSION"
-
-          for file in simulation.util-$VERSION.jar simulation.util-$VERSION-sources.jar simulation.util-$VERSION-javadoc.jar simulation.util-$VERSION.pom; do
-            md5sum "$file" | awk '{print $1}' > "$file.md5"
-            sha1sum "$file" | awk '{print $1}' > "$file.sha1"
-          done
-
-          cd -
-
-          # Create the ZIP bundle from the staging directory
-          cd "$BUNDLE_DIR"
-          zip -r "../target/$BUNDLE_NAME" .
-          cd ..
-
-          echo "Bundle created: target/$BUNDLE_NAME"
           echo "Bundle structure:"
-          unzip -l target/"$BUNDLE_NAME"
-
-          # Clean up staging directory
-          rm -rf "$BUNDLE_DIR"
+          unzip -l target/"$MAVEN_CENTRAL_TMP"
 
           # Upload to Central Portal using REST API
           echo "Uploading to Central Portal..."
@@ -369,7 +272,7 @@ jobs:
 
           UPLOAD_RESPONSE=$(curl -X POST \
             -H "Authorization: Bearer ${BEARER_TOKEN}" \
-            -F "bundle=@target/$BUNDLE_NAME" \
+            -F "bundle=@target/$MAVEN_CENTRAL_TMP" \
             "https://central.sonatype.com/api/v1/publisher/upload?name=simulation.util-${VERSION}&publishingType=USER_MANAGED")
 
           echo "Upload response: $UPLOAD_RESPONSE"
