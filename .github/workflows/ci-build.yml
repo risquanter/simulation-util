@@ -26,60 +26,10 @@ jobs:
       - name: Install tools
         run: sudo apt-get update -y && sudo apt-get install -y jq tar gpg xmlstarlet zip
 
-
-      - name: Import encrypted GPG private-subkey into ephemeral GNUPGHOME
-        env:
-          GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
-          GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
-        run: |
-          set -euo pipefail
-
-          # create ephemeral GNUPGHOME for isolation
-          export GNUPGHOME="$(mktemp -d)"
-          chmod 700 "$GNUPGHOME"
-
-          # write the armored encrypted blob to a temp file (do not expose to logs)
-          TMP_ENC="/tmp/private-subkey.asc.gpg"
-          printf '%s' "$GPG_PRIVATE_KEY" > "$TMP_ENC"
-          chmod 600 "$TMP_ENC"
-
-          # decrypt the encrypted blob into a temporary plaintext file
-          TMP_PLAINT="/tmp/private-subkey.asc"
-          gpg --batch --yes --pinentry-mode loopback --passphrase "$GPG_PASSPHRASE" \
-            --decrypt --output "$TMP_PLAINT" "$TMP_ENC"
-
-          # import the plaintext secret subkey into the ephemeral GNUPGHOME
-          gpg --batch --import "$TMP_PLAINT"
-
-          # kill agent to ensure allowed settings are applied later if needed
-          gpgconf --kill gpg-agent || true
-
-          # discover the signing keyid (first secret key)
-          KEYID=$(gpg --list-secret-keys --with-colons | awk -F: '/^sec:/ {print $5; exit}')
-          if [ -z "$KEYID" ]; then
-            echo "Failed to determine GPG KEYID"
-            shred -u "$TMP_PLAINT" || rm -f "$TMP_PLAINT"
-            rm -f "$TMP_ENC"
-            exit 1
-          fi
-
-          # export GNUPGHOME and KEYID for subsequent steps
-          echo "GNUPGHOME=$GNUPGHOME" >> $GITHUB_ENV
-          echo "GPG_KEYID=$KEYID" >> $GITHUB_ENV
-
-          # store public key copy for inspection if needed
-          gpg --armor --export "$KEYID" > "$GNUPGHOME/publickey.asc"
-
-          # securely delete the plaintext file as soon as possible
-          shred -u "$TMP_PLAINT" || rm -f "$TMP_PLAINT"
-          rm -f "$TMP_ENC"
-
-          echo "Imported encrypted GPG subkey into ephemeral GNUPGHOME and removed plaintext."
-
-
-
       - name: Build and run tests
-        run: mvn -B -ntp clean verify -Dgpg.passphrase="${{ secrets.GPG_PASSPHRASE }}"
+        env:
+          MAVEN_GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
+        run: mvn -B -ntp clean verify
 
       - name: Create Maven deployment bundle
         env:
@@ -90,12 +40,6 @@ jobs:
           # Extract version from POM
           VERSION=$(xmlstarlet sel -t -v "/_:project/_:version" pom.xml)
           echo "Detected version: $VERSION"
-
-          # Sign POM file manually (maven-gpg-plugin doesn't do this automatically)
-          # Temporarily commented out to test if GPG plugin handles POM signing
-          # gpg --batch --yes --pinentry-mode loopback \
-          #   --passphrase "${GPG_PASSPHRASE}" \
-          #   --armor --detach-sign pom.xml
 
           # Create Maven repository structure
           BUNDLE_DIR="maven_bundle"
@@ -116,10 +60,7 @@ jobs:
 
           # Copy POM and signature with proper naming
           cp pom.xml "$BUNDLE_DIR/com/risquanter/simulation.util/$VERSION/simulation.util-$VERSION.pom"
-          # Copy POM signature if it exists (manual signing)
-          if [[ -f pom.xml.asc ]]; then
-            cp pom.xml.asc "$BUNDLE_DIR/com/risquanter/simulation.util/$VERSION/simulation.util-$VERSION.pom.asc"
-          fi
+
           # Copy POM signature if it exists (plugin signing)
           if [[ -f target/simulation.util-$VERSION.pom.asc ]]; then
             cp target/simulation.util-$VERSION.pom.asc "$BUNDLE_DIR/com/risquanter/simulation.util/$VERSION/simulation.util-$VERSION.pom.asc"
