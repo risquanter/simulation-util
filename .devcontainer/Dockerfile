@@ -48,7 +48,7 @@ RUN curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | d
     && rm -rf /var/lib/apt/lists/*
 
 # Install Cosign
-RUN wget -O cosign.deb https://github.com/sigstore/cosign/releases/download/v2.2.2/cosign_2.2.2_amd64.deb \
+RUN wget -O cosign.deb https://github.com/sigstore/cosign/releases/download/v3.0.3/cosign_3.0.3_amd64.deb \
     && dpkg -i cosign.deb \
     && rm cosign.deb
 
