@@ -136,7 +136,10 @@ jobs:
           for jar in simulation.util-*.jar; do
             if [[ -f "$PROVENANCE_PATH/${jar}.bundle" ]]; then
               echo "Verifying $jar..."
-              cosign verify-blob --bundle "$PROVENANCE_PATH/${jar}.bundle" "$jar"
+              cosign verify-blob --bundle "$PROVENANCE_PATH/${jar}.bundle" \
+                --certificate-identity-regexp="https://github.com/risquanter/simulation-util/.github/workflows/ci-build.yml@refs/heads/main" \
+                --certificate-oidc-issuer=https://token.actions.githubusercontent.com \
+                "$jar"
               echo "✅ $jar signature verified"
             else
               echo "❌ Missing bundle for $jar"
@@ -148,7 +151,10 @@ jobs:
           POM_FILE="simulation.util-$VERSION.pom"
           if [[ -f "$PROVENANCE_PATH/pom.xml.bundle" ]]; then
             echo "Verifying $POM_FILE..."
-            cosign verify-blob --bundle "$PROVENANCE_PATH/pom.xml.bundle" "$POM_FILE"
+            cosign verify-blob --bundle "$PROVENANCE_PATH/pom.xml.bundle" \
+              --certificate-identity-regexp="https://github.com/risquanter/simulation-util/.github/workflows/ci-build.yml@refs/heads/main" \
+              --certificate-oidc-issuer=https://token.actions.githubusercontent.com \
+              "$POM_FILE"
             echo "✅ $POM_FILE signature verified"
           else
             echo "❌ Missing bundle for pom.xml"
