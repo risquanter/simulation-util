@@ -223,7 +223,36 @@ jobs:
           echo "Deployment status: $STATUS_RESPONSE"
           echo "✅ Deployment completed (staged). Visit https://central.sonatype.com/ to publish."
 
+      - name: Create Git tag and GitHub release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+
+          VERSION=$(xmlstarlet sel -t -v "/_:project/_:version" pom.xml)
+          TAG_NAME="v$VERSION"
+
+          echo "Creating tag: $TAG_NAME"
+
+          # Create and push git tag
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git tag -a "$TAG_NAME" -m "Release version $VERSION"
+          git push origin "$TAG_NAME"
+
+          # Create GitHub release
+          gh release create "$TAG_NAME" \
+            --title "Release $VERSION" \
+            --notes "Release $VERSION deployed to Maven Central" \
+            --verify-tag
+
       - name: Clean up
         if: always()
         run: |
-          rm -f "$HOME/.m2/settings.xml" 2>/dev/null || true
+          set +e  # Don't fail on cleanup errors
+          rm -f "$HOME/.m2/settings.xml" 2>/dev/null
+          rm -rf /tmp/maven-release 2>/dev/null
+          rm -rf /tmp/maven-deployment-contents 2>/dev/null
+          # Kill any lingering gpg-agent processes (defensive)
+          pkill -u "$(id -u)" gpg-agent 2>/dev/null || true
+          echo "✅ Cleanup completed"

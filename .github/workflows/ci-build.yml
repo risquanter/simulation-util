@@ -193,6 +193,17 @@ jobs:
       - name: Cleanup GPG
         if: always()
         run: |
+          set +e  # Don't fail on cleanup errors
+
+          # Clean up GPG (current - correct)
           if [ -n "${GNUPGHOME:-}" ] && [ -d "${GNUPGHOME}" ]; then
             rm -rf "${GNUPGHOME}"
           fi
+          pkill -u "$(id -u)" gpg-agent 2>/dev/null || true
+
+          # Clean up build artifacts (missing)
+          rm -rf maven_bundle 2>/dev/null
+          rm -rf out 2>/dev/null
+          rm -f maven-central-artifacts.zip 2>/dev/null
+
+          echo "✅ Cleanup completed"
