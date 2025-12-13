@@ -86,15 +86,6 @@ jobs:
             --dir /tmp/maven-release \
             --repo ${{ github.repository }}
 
-      - name: Download provenance
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          gh run download ${{ inputs.run_id }} \
-            --name provenance-${{ inputs.run_id }} \
-            --dir /tmp/release-provenance \
-            --repo ${{ github.repository }}
-
       - name: Extract and verify artifacts
         run: |
           set -euo pipefail
@@ -106,10 +97,6 @@ jobs:
           # Extract the Maven bundle
           cd /tmp/maven-release
           unzip -q maven-central-artifacts.zip -d /tmp/maven-deployment-contents
-
-          # Extract provenance
-          cd /tmp/release-provenance
-          tar -xzf provenance.tgz
 
           # The JARs are located at: com/risquanter/simulation.util/$VERSION/
           JAR_PATH="/tmp/maven-deployment-contents/com/risquanter/simulation.util/$VERSION"
@@ -127,37 +114,36 @@ jobs:
 
           VERSION=$(xmlstarlet sel -t -v "/_:project/_:version" pom.xml)
           JAR_PATH="/tmp/maven-deployment-contents/com/risquanter/simulation.util/$VERSION"
-          PROVENANCE_PATH="/tmp/release-provenance"
 
           echo "Verifying Sigstore signatures..."
 
           # Verify each JAR file against its Sigstore signature
           cd "$JAR_PATH"
           for jar in simulation.util-*.jar; do
-            if [[ -f "$PROVENANCE_PATH/${jar}.bundle" ]]; then
+            if [[ -f "${jar}.sigstore.json" ]]; then
               echo "Verifying $jar..."
-              cosign verify-blob --bundle "$PROVENANCE_PATH/${jar}.bundle" \
+              cosign verify-blob --bundle "${jar}.sigstore.json" \
                 --certificate-identity-regexp="https://github.com/risquanter/simulation-util/.github/workflows/ci-build.yml@refs/heads/main" \
                 --certificate-oidc-issuer=https://token.actions.githubusercontent.com \
                 "$jar"
               echo "✅ $jar signature verified"
             else
-              echo "❌ Missing bundle for $jar"
+              echo "❌ Missing sigstore.json for $jar"
               exit 1
             fi
           done
 
           # Verify POM file signature
           POM_FILE="simulation.util-$VERSION.pom"
-          if [[ -f "$PROVENANCE_PATH/pom.xml.bundle" ]]; then
+          if [[ -f "${POM_FILE}.sigstore.json" ]]; then
             echo "Verifying $POM_FILE..."
-            cosign verify-blob --bundle "$PROVENANCE_PATH/pom.xml.bundle" \
+            cosign verify-blob --bundle "${POM_FILE}.sigstore.json" \
               --certificate-identity-regexp="https://github.com/risquanter/simulation-util/.github/workflows/ci-build.yml@refs/heads/main" \
               --certificate-oidc-issuer=https://token.actions.githubusercontent.com \
               "$POM_FILE"
             echo "✅ $POM_FILE signature verified"
           else
-            echo "❌ Missing bundle for pom.xml"
+            echo "❌ Missing sigstore.json for $POM_FILE"
             exit 1
           fi
 
