@@ -69,7 +69,37 @@ for (int i = 0; i <= steps; i++) {
 
 Various examples under `src/test/java/com/risquanter/examples` demonstrating fitting and practical use-cases, such as working with risk hierarchies expressed as loss exceedance curves (LEC). The above snippets are from
 
-# HDR (not yet included in the current version)
+# HDR Pseudo-Random Number Generator (Java)
+This library now includes an implementation of the HDR pseudo-random number generator (PRNG) proposed by Douglas Hubbard [2]. The HDR PRNG is designed as a multi-dimensional, counter-based generator that produces reproducible random sequences across platforms and programming languages. Unlike traditional serial PRNGs (e.g., Mersenne Twister), which rely on iterative state updates, the HDR approach uses explicit counters for each dimension of a simulation, enabling direct access to any trial without computing all preceding values.
+
+## Key Features
+Counter-Based Design Each random number is generated directly from a counter (trial ID, variable ID, entity ID, time ID, agent ID). This allows “random access” to any scenario without sequential iteration, making it highly efficient for large-scale simulations.
+
+Multi-Dimensional Support The generator supports up to five independent dimensions:
+
+- Trial ID (unique scenario identifier)
+- Variable ID (unique identifier for each random variable)
+- Entity ID (organization or model context)
+- Time ID (time series index for temporal simulations)
+- Agent ID (optional dimension for agent-based models)
+
+These dimensions ensure that random sequences remain independent and reproducible across different modeling contexts.
+
+## Cross-Platform Consistency 
+The HDR PRNG is algebraically defined to produce identical results in Java, Python, R, Excel, and other environments, regardless of differences in precision or implementation details. This makes it suitable for collaborative modeling across diverse toolchains.
+
+## Statistical Quality 
+The HDR PRNG has been validated against the Dieharder test suite (114 tests for randomness) and performs comparably to industry-standard generators such as Mersenne Twister. It achieves strong coverage of the 32-bit integer space and passes demanding randomness tests, ensuring reliability for Monte Carlo simulations.
+
+## Scalability 
+Capable of generating millions of scenarios across millions of variables and entities, while maintaining reproducibility and independence of random streams. This makes it practical for interactive risk modeling and large-scale enterprise simulations.
+
+## Implementation Notes
+- The Java implementation follows the structure defined in Hubbard’s paper, using nested modulus operations with carefully chosen prime coefficients to ensure randomness quality and compliance with Excel’s precision limits.
+- The Java implementation's correctness is tested against the Excel implementaiton.
+- Each dimension is mapped to a prime multiplier, ensuring unique sequences for different combinations of trial, variable, entity, time, and agent identifiers.
+- The output is normalized to the interval [0,1], making it directly usable for probability-based sampling and integration with distributions such as Metalog.
+- Because the generator is counter-based, parallelization is straightforward: different processors can generate disjoint ranges of scenarios without overlap or correlation.
 
 ## License
 
@@ -99,4 +129,5 @@ You should have received a copy of the GNU Affero General Public License along w
 
 ## References
 [1] T. W. Keelin, "The Metalog Distributions," *Decision Analysis*, vol. 13, no. 4, pp. 243–277, Dec. 2016. [Online]. Available: https://doi.org/10.1287/deca.2016.0338
+
 [2] D. W. Hubbard, "A Multi-Dimensional, Counter-Based Pseudo Random Number Generator as a Standard for Monte Carlo Simulations," in *Proc. Winter Simulation Conf.*, N. Mustafee, K.-H. G. Bae, S. Lazarova-Molnar, M. Rabe, C. Szabo, P. Haas, and Y.-J. Son, Eds., IEEE, 2019, pp. 3064–3073. [Online]. Available: https://www.informs-sim.org/wsc19papers/339.pdf
