@@ -70,7 +70,7 @@ for (int i = 0; i <= steps; i++) {
 Various examples under `src/test/java/com/risquanter/examples` demonstrating fitting and practical use-cases, such as working with risk hierarchies expressed as loss exceedance curves (LEC). The above snippets are from
 
 # HDR Pseudo-Random Number Generator (Java)
-This library now includes an implementation of the HDR pseudo-random number generator (PRNG) proposed by Douglas Hubbard [2]. The HDR PRNG is designed as a multi-dimensional, counter-based generator that produces reproducible random sequences across platforms and programming languages. Unlike traditional serial PRNGs (e.g., Mersenne Twister), which rely on iterative state updates, the HDR approach uses explicit counters for each dimension of a simulation, enabling direct access to any trial without computing all preceding values.
+This library now includes an implementation of the HDR pseudo-random number generator (PRNG) proposed by Douglas Hubbard [2]. The HDR PRNG designed by Hubbard [2] is a multi-dimensional, counter-based generator that produces reproducible random sequences across platforms and programming languages. Unlike traditional serial PRNGs (e.g., Mersenne Twister), which rely on iterative state updates, the HDR approach uses explicit counters for each dimension of a simulation, enabling direct access to any trial without computing all preceding values.
 
 ## Key Features
 Counter-Based Design Each random number is generated directly from a counter (trial ID, variable ID, entity ID, time ID, agent ID). This allows “random access” to any scenario without sequential iteration, making it highly efficient for large-scale simulations.
