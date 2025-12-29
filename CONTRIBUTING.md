@@ -1,4 +1,4 @@
-# Contributing to Java Metalog Distribution
+# Contributing to Risquanter - Simulation-Util
 
 This project uses DCO to manage contributions:
 
