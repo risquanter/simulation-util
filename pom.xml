@@ -5,7 +5,7 @@
 
     <groupId>com.risquanter</groupId>
     <artifactId>simulation.util</artifactId>
-    <version>0.8.0</version>
+    <version>0.8.1</version>
     <name>Java Metalog Distribution</name>
     <description>A Java implementation of the Metalog distribution</description>
     <url>https://github.com/risquanter/java-metalog-distribution</url>
@@ -148,46 +148,57 @@
                     <checksums>required</checksums>
                 </configuration>
             </plugin>
-            <plugin>
-                <groupId>dev.sigstore</groupId>
-                <artifactId>sigstore-maven-plugin</artifactId>
-                <version>2.0.0</version>
-                <executions>
-                    <execution>
-                        <id>sign</id>
-                        <phase>verify</phase>
-                        <goals>
-                            <goal>sign</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-gpg-plugin</artifactId>
-                <version>3.2.5</version>
-                <executions>
-                    <execution>
-                        <id>sign-artifacts</id>
-                        <phase>verify</phase>
-                        <goals>
-                            <goal>sign</goal>
-                        </goals>
-                        <configuration>
-                            <gpgArguments>
-                                <arg>--pinentry-mode</arg>
-                                <arg>loopback</arg>
-                            </gpgArguments>
-                        </configuration>
-                    </execution>
-                </executions>
-                <configuration>
-                    <!-- Sign the POM file in addition to artifacts -->
-                    <excludes>
-                        <exclude>**/*.asc</exclude>
-                    </excludes>
-                </configuration>
-            </plugin>
         </plugins>
     </build>
+
+    <profiles>
+        <!-- Activated only in CI/release builds via: mvn -Psign ... -->
+        <profile>
+            <id>sign</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>dev.sigstore</groupId>
+                        <artifactId>sigstore-maven-plugin</artifactId>
+                        <version>2.0.0</version>
+                        <executions>
+                            <execution>
+                                <id>sign</id>
+                                <phase>verify</phase>
+                                <goals>
+                                    <goal>sign</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-gpg-plugin</artifactId>
+                        <version>3.2.5</version>
+                        <executions>
+                            <execution>
+                                <id>sign-artifacts</id>
+                                <phase>verify</phase>
+                                <goals>
+                                    <goal>sign</goal>
+                                </goals>
+                                <configuration>
+                                    <gpgArguments>
+                                        <arg>--pinentry-mode</arg>
+                                        <arg>loopback</arg>
+                                    </gpgArguments>
+                                </configuration>
+                            </execution>
+                        </executions>
+                        <configuration>
+                            <!-- Sign the POM file in addition to artifacts -->
+                            <excludes>
+                                <exclude>**/*.asc</exclude>
+                            </excludes>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 </project>

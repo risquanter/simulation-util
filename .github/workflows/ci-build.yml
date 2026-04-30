@@ -81,7 +81,7 @@ jobs:
       - name: Build and run tests
         env:
           MAVEN_GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
-        run: mvn -B -ntp clean verify
+        run: mvn -B -ntp -Psign clean verify
 
       - name: Create Maven deployment bundle
         env:
