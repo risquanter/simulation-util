@@ -148,12 +148,6 @@ jobs:
 
           echo "✅ All JAR and POM signatures verified successfully"
 
-      - name: Set up Java
-        uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: '21'
-
       - name: Deploy to Maven Central Publisher Portal
         env:
           CENTRAL_PORTAL_USERNAME: ${{ secrets.CENTRAL_PORTAL_ORG_TOKEN_NAME }}
